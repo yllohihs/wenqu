@@ -1,13 +1,13 @@
 {
-  "name": "星野 · 知识花园",
-  "short_name": "星野",
-  "description": "把零散的好奇心慢慢连成一张会生长的知识网。",
+  "name": "问渠 · 源头活水",
+  "short_name": "问渠",
+  "description": "问渠那得清如许?为有源头活水来。把零散的好奇心,一瓢瓢舀成一张会生长的脉络。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FBFAF6",
-  "theme_color": "#1B2A22",
+  "background_color": "#F5F2EA",
+  "theme_color": "#3C7A6E",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },

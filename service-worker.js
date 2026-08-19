@@ -1,4 +1,4 @@
-const CACHE = 'xingye-v1';
+const CACHE = 'wenqu-v1';
 const ASSETS = [
   './',
   './index.html',

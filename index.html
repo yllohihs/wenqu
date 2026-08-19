@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<title>星野 · 知识花园</title>
-<meta name="theme-color" content="#1B2A22" />
+<title>问渠 · 源头活水</title>
+<meta name="theme-color" content="#3C7A6E" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --paper:#FBFAF6; --card:#FFFFFF; --ink:#22271F; --ink-soft:#5A6157; --ink-faint:#8C9184;
-    --moss:#3E5C4A; --moss-bright:#4E7A5C; --amber:#B5842B; --amber-soft:#F2E7CF;
-    --line:rgba(34,39,31,.10); --line-strong:rgba(34,39,31,.18);
-    --shadow:0 1px 2px rgba(34,39,31,.05), 0 8px 24px rgba(34,39,31,.06);
+    --paper:#F5F2EA; --card:#FFFFFF; --ink:#20302B; --ink-soft:#5A6E66; --ink-faint:#8A9A92;
+    --moss:#3C7A6E; --moss-bright:#4A8E80; --amber:#B5763A; --amber-soft:#E4EFEA;
+    --line:rgba(32,48,43,.10); --line-strong:rgba(32,48,43,.18);
+    --shadow:0 1px 2px rgba(32,48,43,.05), 0 8px 24px rgba(32,48,43,.06);
     --radius:14px;
-    --n0:#4E7A5C; --n1:#B06B3A; --n2:#4A6B7A; --n3:#9A5560; --n4:#A98A2E; --n5:#6E5F92;
+    --n0:#3C7A6E; --n1:#B5763A; --n2:#4A6B7A; --n3:#9A5560; --n4:#A98A2E; --n5:#6E5F92;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --paper:#14171280; --paper:#141712; --card:#1D211B; --ink:#ECEAE0; --ink-soft:#A7AC9F; --ink-faint:#71766B;
-      --moss:#7FA98C; --moss-bright:#8FBF9C; --amber:#D9A441; --amber-soft:#3A3320;
+      --paper:#141B18; --card:#1C2521; --ink:#ECEAE0; --ink-soft:#9FB0A8; --ink-faint:#6E7E76;
+      --moss:#6FB3A3; --moss-bright:#84C4B4; --amber:#C88A5B; --amber-soft:#22302B;
       --line:rgba(236,234,224,.10); --line-strong:rgba(236,234,224,.18);
       --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-      --n0:#6FA383; --n1:#C88A5B; --n2:#6E93A6; --n3:#BE7B86; --n4:#C7A649; --n5:#9585B8;
+      --n0:#6FB3A3; --n1:#C88A5B; --n2:#6E93A6; --n3:#BE7B86; --n4:#C7A649; --n5:#9585B8;
     }
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -42,19 +42,21 @@
     padding:calc(env(safe-area-inset-top) + 18px) 20px 12px;
     display:flex; align-items:baseline; justify-content:space-between; gap:12px;
   }
-  .brand{display:flex; align-items:baseline; gap:9px;}
+  .brand{display:flex; flex-direction:column; gap:2px;}
+  .brand .name{display:flex; align-items:baseline; gap:7px;}
   .brand h1{
-    font-family:'Fraunces', serif; font-weight:500; font-size:26px; letter-spacing:.5px;
+    font-family:'Noto Serif SC', serif; font-weight:600; font-size:27px; letter-spacing:4px;
     margin:0; color:var(--ink);
   }
-  .brand .dot{width:7px; height:7px; border-radius:50%; background:var(--amber); transform:translateY(-3px);}
-  .brand small{font-size:12px; color:var(--ink-faint); font-weight:400;}
+  .brand .dot{width:6px; height:6px; border-radius:50%; background:var(--moss); transform:translateY(-9px);}
+  .brand small{font-size:11.5px; color:var(--moss); font-weight:400; letter-spacing:.5px;}
   .gear{
     background:none; border:none; color:var(--ink-faint); font-size:20px; cursor:pointer;
     padding:6px; line-height:1; border-radius:8px;
   }
   .gear:hover{color:var(--ink); background:var(--line);}
 
+  .wave{display:block; width:100%; height:16px; margin:2px 0 2px;}
   .tabs{display:flex; gap:4px; padding:4px 20px 14px;}
   .tab{
     flex:1; text-align:center; padding:8px 0; font-size:14px; font-weight:500;
@@ -85,7 +87,7 @@
   .empty{
     text-align:center; padding:60px 24px; color:var(--ink-faint);
   }
-  .empty .big{font-family:'Fraunces',serif; font-size:19px; color:var(--ink-soft); margin-bottom:8px;}
+  .empty .big{font-family:'Noto Serif SC',serif; font-size:19px; color:var(--ink-soft); margin-bottom:8px;}
 
   /* 星图 */
   #galaxyWrap{
@@ -174,7 +176,7 @@
   .panel.show{transform:none;}
   .panel .p-head{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
   .panel .p-head button{background:none;border:none;color:var(--ink);font-size:22px;cursor:pointer;padding:4px;}
-  .panel h2{font-family:'Fraunces',serif; font-weight:500; font-size:20px; margin:0;}
+  .panel h2{font-family:'Noto Serif SC',serif; font-weight:500; font-size:20px; margin:0;}
   .p-row{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:15px 4px; border-bottom:0.5px solid var(--line);
@@ -211,16 +213,19 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <span class="dot"></span>
-      <h1>星野</h1>
-      <small>你的知识花园</small>
+      <div class="name"><h1>问渠</h1><span class="dot"></span></div>
+      <small>为有源头活水来</small>
     </div>
     <button class="gear" id="gearBtn" aria-label="设置">⚙</button>
   </header>
 
+  <svg class="wave" viewBox="0 0 400 16" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 9 Q25 3 50 9 T100 9 T150 9 T200 9 T250 9 T300 9 T350 9 T400 9" fill="none" stroke="var(--moss)" stroke-width="1.2" opacity="0.45"/>
+  </svg>
+
   <div class="tabs">
     <button class="tab on" data-view="stream"><i>✎</i>笔记流</button>
-    <button class="tab" data-view="galaxy"><i>✦</i>星图</button>
+    <button class="tab" data-view="galaxy"><i>≈</i>脉络</button>
   </div>
 
   <main>
@@ -235,12 +240,12 @@
       <div id="galaxyWrap">
         <svg id="galaxy" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
-      <div class="glxhint" id="glxhint">拖动星子换位置,点一下看它下面攒了什么。</div>
+      <div class="glxhint" id="glxhint">拖动节点换位置,点一下看它汇了哪些活水。</div>
     </div>
   </main>
 </div>
 
-<button class="fab" id="fab"><span class="plus">＋</span>记一颗星子</button>
+<button class="fab" id="fab"><span class="plus">＋</span>舀一瓢活水</button>
 
 <!-- 捕捉浮层 -->
 <div class="sheet-bg" id="sheetBg"></div>
@@ -254,7 +259,7 @@
   <div id="suggestSlot"></div>
   <div class="sheet-foot">
     <button class="btn" id="cancelBtn">先不记</button>
-    <button class="btn primary" id="saveBtn">种下</button>
+    <button class="btn primary" id="saveBtn">记下</button>
   </div>
 </div>
 
@@ -274,12 +279,13 @@
     <input type="file" id="importFile" accept="application/json" style="display:none" />
   </div>
   <div class="p-row">
-    <div><div class="l">清空重来</div><div class="d">删掉全部星子,回到空白</div></div>
+    <div><div class="l">清空重来</div><div class="d">删掉全部,回到空白</div></div>
     <button class="warn" id="clearBtn">清空</button>
   </div>
   <div class="p-note">
-    <b>星野</b>不是用来逼你的。没有打卡,没有连续天数,没有进度条。<br><br>
-    它只做一件事:把你今天随手研究的、明天偶然读到的,一颗颗存下来,慢慢连成一张只属于你的网。过一阵回来看,你会认出自己好奇心的形状。<br><br>
+    <b>问渠</b>不是用来逼你的。没有打卡,没有连续天数,没有进度条。<br><br>
+    它只做一件事:把你今天随手研究的、明天偶然读到的,一瓢瓢舀进来,慢慢连成一张只属于你的脉络。过一阵回来看,你会认出自己好奇心的形状。<br><br>
+    问渠那得清如许?为有源头活水来。<br><br>
     <b>数据全部存在这台设备上</b>,不上传任何服务器。所以记得偶尔导出备份。
   </div>
 </div>
@@ -289,7 +295,7 @@
 <script>
 (function(){
   'use strict';
-  const KEY='xingye-data-v1';
+  const KEY='wenqu-data-v1';
   const COLORS=['--n0','--n1','--n2','--n3','--n4','--n5'];
   const cssv=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
@@ -349,7 +355,7 @@
   function renderStream(highlight){
     const el=$('#stream'); el.innerHTML='';
     if(state.notes.length===0){
-      el.innerHTML='<div class="empty"><div class="big">还是一片空白的夜空</div>点右下角,种下你的第一颗星子。<br>随手研究了什么、偶然读到什么,都可以。</div>';
+      el.innerHTML='<div class="empty"><div class="big">渠里还没有水</div>点右下角,舀进第一瓢。<br>随手研究了什么、偶然读到什么,都可以。</div>';
       return;
     }
     state.notes.slice().sort((a,b)=>b.t-a.t).forEach(n=>{
@@ -450,7 +456,7 @@
     if(m && score>0.09){
       linkTarget=m.id;
       const verb = chosenTopic ? ('要不要把它和 <b>'+esc(m.label)+'</b> 连起来?') 
-                               : ('这颗星子,像是和你之前记的 <b>'+esc(m.label)+'</b> 有关。');
+                               : ('这一条,像是和你之前记的 <b>'+esc(m.label)+'</b> 同源。');
       slot.innerHTML=
         '<div class="suggest"><div class="s-text">✦ '+verb+'</div>'+
         '<div class="s-act">'+
@@ -461,7 +467,7 @@
       $('#linkYes').addEventListener('click',()=>{
         linkAccepted=true;
         slot.querySelector('.suggest').style.background=cssv('--amber-soft');
-        slot.querySelector('.s-text').innerHTML='✓ 好,种下时会把它连到 <b>'+esc(m.label)+'</b>。';
+        slot.querySelector('.s-text').innerHTML='✓ 好,记下时会把它连到 <b>'+esc(m.label)+'</b>。';
         slot.querySelector('.s-act').style.display='none';
       });
       $('#linkNo').addEventListener('click',()=>{ linkAccepted=false; linkTarget=null; slot.innerHTML=''; });
@@ -503,7 +509,7 @@
     closeSheet();
     renderStream(null);
     if(view==='galaxy'){ layoutNew(); startGalaxy(); }
-    toast('种下了 ✦');
+    toast('舀进来了 ≈');
   }
   function newConcept(label){
     const id='c_'+Date.now();
@@ -643,9 +649,9 @@
     const c=concept(id); const cnt=noteCount(id);
     const hint=$('#glxhint');
     if(selected){
-      hint.innerHTML='<b>'+esc(c.label)+'</b> 下面攒了 '+cnt+' 颗星子。切到笔记流看看它们。';
+      hint.innerHTML='<b>'+esc(c.label)+'</b> 汇了 '+cnt+' 条。切到笔记流看看它们。';
     } else {
-      hint.textContent='拖动星子换位置,点一下看它下面攒了什么。';
+      hint.textContent='拖动节点换位置,点一下看它汇了哪些活水。';
     }
     renderGalaxy();
   }
@@ -660,7 +666,7 @@
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     const d=new Date(); const stamp=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-    a.href=url; a.download='星野备份-'+stamp+'.json'; a.click();
+    a.href=url; a.download='问渠备份-'+stamp+'.json'; a.click();
     URL.revokeObjectURL(url); toast('已导出备份');
   });
   $('#importBtn').addEventListener('click',()=>$('#importFile').click());
@@ -678,7 +684,7 @@
     rd.readAsText(f); e.target.value='';
   });
   $('#clearBtn').addEventListener('click',()=>{
-    if(confirm('确定清空全部星子?建议先导出备份。')){
+    if(confirm('确定清空全部?建议先导出备份。')){
       state={concepts:[],notes:[],links:[],seeded:true};
       save(); renderStream(null); renderChips();
       panel.classList.remove('show'); toast('已清空');
