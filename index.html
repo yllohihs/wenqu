@@ -108,11 +108,10 @@
   .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; text-indent:3px; line-height:1; display:block; transform:translateY(0.5px);}
 
   /* 顶部视图切换 */
-  .view-tabs{display:flex; align-items:stretch; padding:24px 28px 0;}
-  .vtab{flex:1; text-align:center; background:none; border:none; padding:0 0 8px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; border-bottom:1px solid transparent; white-space:nowrap; position:relative;}
-  .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
-  .sortbar{display:flex; justify-content:flex-end; padding:10px 28px 4px;}
-  .sorttri-btn{display:inline-flex; align-items:center; gap:5px; background:none; border:none; cursor:pointer; padding:3px 0; font-family:'Noto Sans SC',sans-serif; font-size:10px; letter-spacing:.5px; color:var(--ink-faint); opacity:.75;}
+  .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
+  .vtab{flex:1; text-align:center; background:none; border:none; padding:11px 6px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; transition:.15s;}
+  .vtab.on{background:var(--ink); color:var(--paper);}
+  .sorttri-btn{flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; background:none; border:none; cursor:pointer; padding:11px 0 11px 14px; color:var(--ink-faint);}
   .sorttri-btn .tri{width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent; border-top:4px solid var(--ink-faint); transition:transform .18s;}
   .sorttri-btn .tri.up{transform:rotate(180deg);}
 
@@ -181,9 +180,9 @@
     <div class="view-tabs">
       <button class="vtab on" data-view="list">Threads · 线索</button>
       <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
+      <button class="sorttri-btn" id="sortTri" title="最新"><span class="tri"></span></button>
     </div>
     <div id="listView">
-      <div class="sortbar" id="sortBar"><button class="sorttri-btn" id="sortTri"><span class="tri"></span><span class="lbl" id="sortLabel">最新</span></button></div>
       <div id="threadList"></div>
     </div>
 
@@ -243,7 +242,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.13</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.15</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -304,11 +303,11 @@
   function switchView(v){
     view=v; currentThread=null;
     $('#listView').style.display=v==='list'?'block':'none';
-    $('#sortBar').style.display=v==='list'?'flex':'none';
     $('#detailView').style.display='none';
     $('#galaxyView').style.display=v==='galaxy'?'block':'none';
     document.querySelector('.view-tabs').style.display='flex';
     
+    $('#sortTri').style.display=v==='list'?'inline-flex':'none';
     $('#fab').style.display=v==='list'?'flex':'none'; $('#fabPad').style.display=v==='list'?'block':'none';
     $('#fabText').textContent='起一条线索';
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
@@ -318,7 +317,7 @@
   $('#sortTri').addEventListener('click',()=>{
     sortMode = sortMode==='new'?'old':'new';
     $('#sortTri').querySelector('.tri').classList.toggle('up', sortMode==='old');
-    $('#sortLabel').textContent = sortMode==='new'?'最新':'最早';
+    $('#sortTri').title = sortMode==='new'?'最新':'最早';
     renderList(); });
 
   function renderList(){
@@ -338,7 +337,7 @@
 
   function openThread(id){
     currentThread=id; view='detail'; editingKind=null;
-    $('#listView').style.display='none'; $('#galaxyView').style.display='none'; $('#sortBar').style.display='none'; $('#detailView').style.display='block';
+    $('#listView').style.display='none'; $('#galaxyView').style.display='none'; $('#detailView').style.display='block';
     document.querySelector('.view-tabs').style.display='none'; $('#fab').style.display='none'; $('#fabPad').style.display='none'; stopGalaxy(); renderDetail();
     window.scrollTo(0,0);
   }
