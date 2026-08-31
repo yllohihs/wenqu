@@ -29,11 +29,10 @@
   .wrap{max-width:600px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
   ::-webkit-scrollbar{display:none;}
 
-  header{padding:calc(env(safe-area-inset-top) + 30px) 28px 14px; display:flex; align-items:flex-start; justify-content:space-between;}
+  header{padding:calc(env(safe-area-inset-top) + 30px) 28px 18px; display:flex; align-items:center; justify-content:space-between;}
   .brand .brow{display:flex; align-items:flex-end; gap:12px;}
   .brand h1{font-size:24px; font-weight:400; letter-spacing:10px; color:var(--ink); padding-left:10px; margin:0;}
   .brand .ben{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); padding-bottom:5px;}
-  .brand .bsub{font-size:10px; letter-spacing:5px; color:var(--ink-faint); margin-top:7px; font-weight:300;}
   .gear{background:none; border:none; color:var(--ink-faint); font-size:19px; cursor:pointer; padding:6px; line-height:1;}
   .gear:hover{color:var(--ink);}
 
@@ -108,10 +107,14 @@
   .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:2px;}
 
   /* 顶部视图切换 */
-  .view-tabs{display:flex; align-items:center; gap:18px; padding:8px 28px 0;}
-  .vtab{background:none; border:none; padding:0 0 6px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; border-bottom:1px solid transparent;}
+  .view-tabs{display:flex; align-items:center; gap:20px; padding:6px 28px 0;}
+  .vtab{background:none; border:none; padding:0 0 7px; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:1px; color:var(--ink-faint); cursor:pointer; border-bottom:1px solid transparent; white-space:nowrap; flex-shrink:0;}
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
-  .view-tabs .sortbtn{margin-left:auto; padding-bottom:6px;}
+  .sortsel{margin-left:auto; flex-shrink:0; background:none; border:none; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:1px; color:var(--ink-soft); cursor:pointer; padding:0 18px 7px 0; -webkit-appearance:none; appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-faint) 50%),linear-gradient(135deg,var(--ink-faint) 50%,transparent 50%);
+    background-position:calc(100% - 8px) calc(50% - 2px), calc(100% - 4px) calc(50% - 2px); background-size:4px 4px,4px 4px; background-repeat:no-repeat;}
+  .sortsel:focus{outline:none;}
+  .sortsel option{color:var(--ink); background:var(--paper);}
 
   /* 浮层 */
   .sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
@@ -168,18 +171,20 @@
   <header>
     <div class="brand">
       <div class="brow"><h1>问渠</h1><span class="ben">Wellspring</span></div>
-      <div class="bsub">为 有 源 头 活 水 来</div>
     </div>
-    <button class="gear" id="gearBtn" aria-label="settings"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/></svg></button>
+    <button class="gear" id="gearBtn" aria-label="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
 
   <main>
     <div class="installbar" id="installBar">添加到主屏幕<button id="installBtn">Install</button></div>
 
     <div class="view-tabs">
-      <button class="vtab on" data-view="list">Threads · 线索</button>
-      <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
-      <button class="sortbtn" id="sortBtn">排序 <b id="sortLabel">最新</b></button>
+      <button class="vtab on" data-view="list">线索 Threads</button>
+      <button class="vtab" data-view="galaxy">脉络 Constellation</button>
+      <select class="sortsel" id="sortSel">
+        <option value="new">最新</option>
+        <option value="old">最早</option>
+      </select>
     </div>
     <div id="listView">
       <div style="height:14px;"></div>
@@ -241,7 +246,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.4</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.5</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -305,14 +310,14 @@
     $('#detailView').style.display='none';
     $('#galaxyView').style.display=v==='galaxy'?'block':'none';
     document.querySelector('.view-tabs').style.display='flex';
-    $('#sortBtn').style.visibility=v==='list'?'visible':'hidden';
+    $('#sortSel').style.display=v==='list'?'block':'none';
     $('#fab').style.display=v==='list'?'block':'none';
     $('#fabText').textContent='起一条线索';
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
     if(v==='list') renderList();
   }
 
-  $('#sortBtn').addEventListener('click',()=>{ sortMode=sortMode==='new'?'old':'new'; $('#sortLabel').textContent=sortMode==='new'?'最新':'最早'; renderList(); });
+  $('#sortSel').addEventListener('change',(e)=>{ sortMode=e.target.value; renderList(); });
 
   function renderList(){
     const el=$('#threadList'); el.innerHTML='';
