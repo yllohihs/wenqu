@@ -29,11 +29,11 @@
   .wrap{max-width:600px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
   ::-webkit-scrollbar{display:none;}
 
-  header{padding:calc(env(safe-area-inset-top) + 40px) 28px 24px; display:flex; align-items:flex-start; justify-content:space-between;}
+  header{padding:calc(env(safe-area-inset-top) + 30px) 28px 14px; display:flex; align-items:flex-start; justify-content:space-between;}
   .brand .brow{display:flex; align-items:flex-end; gap:12px;}
-  .brand h1{font-size:26px; font-weight:400; letter-spacing:14px; color:var(--ink); padding-left:14px; margin:0;}
+  .brand h1{font-size:24px; font-weight:400; letter-spacing:10px; color:var(--ink); padding-left:10px; margin:0;}
   .brand .ben{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); padding-bottom:5px;}
-  .brand .bsub{font-size:10px; letter-spacing:6px; color:var(--ink-faint); margin-top:12px; font-weight:300;}
+  .brand .bsub{font-size:10px; letter-spacing:5px; color:var(--ink-faint); margin-top:7px; font-weight:300;}
   .gear{background:none; border:none; color:var(--ink-faint); font-size:19px; cursor:pointer; padding:6px; line-height:1;}
   .gear:hover{color:var(--ink);}
 
@@ -50,7 +50,7 @@
   .installbar button{margin-left:auto; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:7px 14px; border:none; background:var(--ink); color:var(--paper); cursor:pointer;}
 
   /* 线索列表 */
-  .thread{padding:24px 28px; border-top:0.5px solid var(--line-soft); cursor:pointer; transition:background .15s; display:flex; gap:18px; animation:fade .4s ease both;}
+  .thread{padding:19px 28px; border-top:0.5px solid var(--line-soft); cursor:pointer; transition:background .15s; display:flex; gap:18px; animation:fade .4s ease both;}
   .thread:first-of-type{border-top:0.5px solid var(--line);}
   .thread:hover{background:var(--raise);}
   @keyframes fade{from{opacity:0;} to{opacity:1;}}
@@ -104,14 +104,14 @@
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
-  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; padding:calc(env(safe-area-inset-bottom) + 20px) 20px 20px; text-align:center; cursor:pointer; z-index:30; border:none; width:100%;}
+  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; padding:16px 20px calc(env(safe-area-inset-bottom) + 12px); text-align:center; cursor:pointer; z-index:30; border:none; width:100%;}
   .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:2px;}
 
-  /* 底部 tab */
-  .tabs{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; display:flex; background:var(--paper); border-top:0.5px solid var(--line); z-index:25;}
-  .tab{flex:1; text-align:center; padding:16px 0 calc(env(safe-area-inset-bottom) + 16px); font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); background:none; border:none; cursor:pointer;}
-  .tab.on{color:var(--ink);}
-  .tab .cn{font-family:'Noto Sans SC',sans-serif; font-size:11px; letter-spacing:2px; display:block; margin-bottom:3px;}
+  /* 顶部视图切换 */
+  .view-tabs{display:flex; align-items:center; gap:18px; padding:8px 28px 0;}
+  .vtab{background:none; border:none; padding:0 0 6px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; border-bottom:1px solid transparent;}
+  .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
+  .view-tabs .sortbtn{margin-left:auto; padding-bottom:6px;}
 
   /* 浮层 */
   .sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
@@ -170,17 +170,18 @@
       <div class="brow"><h1>问渠</h1><span class="ben">Wellspring</span></div>
       <div class="bsub">为 有 源 头 活 水 来</div>
     </div>
-    <button class="gear" id="gearBtn" aria-label="settings">⚙</button>
+    <button class="gear" id="gearBtn" aria-label="settings"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/></svg></button>
   </header>
 
   <main>
     <div class="installbar" id="installBar">添加到主屏幕<button id="installBtn">Install</button></div>
 
+    <div class="view-tabs">
+      <button class="vtab on" data-view="list">Threads · 线索</button>
+      <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
+      <button class="sortbtn" id="sortBtn">排序 <b id="sortLabel">最新</b></button>
+    </div>
     <div id="listView">
-      <div class="list-head">
-        <span class="lbl">Threads · 线索</span>
-        <button class="sortbtn" id="sortBtn">排序 <b id="sortLabel">最新</b></button>
-      </div>
       <div style="height:14px;"></div>
       <div id="threadList"></div>
     </div>
@@ -188,17 +189,12 @@
     <div id="detailView" style="display:none;"></div>
 
     <div id="galaxyView" style="display:none;">
-      <div class="glx-head">Constellation · 脉络</div>
       <div id="galaxyWrap"><svg id="galaxy" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
       <div class="glxhint" id="glxhint">拖动节点换位置,点一下看这个概念下有哪些线索</div>
     </div>
   </main>
 </div>
 
-<div class="tabs" id="tabs">
-  <button class="tab on" data-view="list"><span class="cn">线索</span>Threads</button>
-  <button class="tab" data-view="galaxy"><span class="cn">脉络</span>Constellation</button>
-</div>
 <button class="fab" id="fab" style="display:none;"><span class="cn" id="fabText">起一条线索</span></button>
 
 <div class="sheet-bg" id="sheetBg"></div>
@@ -245,7 +241,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -301,14 +297,15 @@
     return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
   function stageOf(t){ const l=lastEntry(t.id); return l?kInfo(l.kind).cn:'空'; }
 
-  document.querySelectorAll('.tab').forEach(t=>{ t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); switchView(t.dataset.view); }); });
+  document.querySelectorAll('.vtab').forEach(t=>{ t.addEventListener('click',()=>{
+    document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); switchView(t.dataset.view); }); });
   function switchView(v){
     view=v; currentThread=null;
     $('#listView').style.display=v==='list'?'block':'none';
     $('#detailView').style.display='none';
     $('#galaxyView').style.display=v==='galaxy'?'block':'none';
-    $('#tabs').style.display='flex';
+    document.querySelector('.view-tabs').style.display='flex';
+    $('#sortBtn').style.visibility=v==='list'?'visible':'hidden';
     $('#fab').style.display=v==='list'?'block':'none';
     $('#fabText').textContent='起一条线索';
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
@@ -335,7 +332,7 @@
   function openThread(id){
     currentThread=id; view='detail'; editingKind=null;
     $('#listView').style.display='none'; $('#galaxyView').style.display='none'; $('#detailView').style.display='block';
-    $('#tabs').style.display='none'; $('#fab').style.display='none'; stopGalaxy(); renderDetail();
+    document.querySelector('.view-tabs').style.display='none'; $('#fab').style.display='none'; stopGalaxy(); renderDetail();
     window.scrollTo(0,0);
   }
   function renderDetail(){
