@@ -50,7 +50,6 @@
 
   /* 线索列表 */
   .thread{padding:19px 28px; border-top:0.5px solid var(--line-soft); cursor:pointer; transition:background .15s; display:flex; gap:18px; animation:fade .4s ease both;}
-  .thread:first-of-type{border-top:0.5px solid var(--line-soft);}
   .thread:hover{background:var(--raise);}
   @keyframes fade{from{opacity:0;} to{opacity:1;}}
   .thread .num{font-family:'Inter',sans-serif; font-size:11px; color:var(--ink-faint); letter-spacing:1px; padding-top:3px; min-width:22px;}
@@ -60,6 +59,7 @@
   .thread .tconcepts{font-size:11px; letter-spacing:.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .thread .tstage{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); margin-left:auto; white-space:nowrap;}
 
+  #threadList .thread:first-child{border-top:none;}
   .empty{text-align:center; padding:80px 32px; color:var(--ink-faint);}
   .empty .big{font-size:17px; color:var(--ink-soft); margin-bottom:10px; letter-spacing:1px;}
   .empty .en{font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px;}
@@ -103,8 +103,9 @@
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
-  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; letter-spacing:3px; height:56px; padding:0 20px calc(env(safe-area-inset-bottom)) 20px; box-sizing:content-box; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:30; border:none; width:100%;}
-  .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; line-height:1;}
+  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; letter-spacing:3px; height:56px; padding:0; border:none; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:30; line-height:1; bottom:env(safe-area-inset-bottom);}
+  .fab-pad{position:fixed; left:0; right:0; bottom:0; height:env(safe-area-inset-bottom); background:var(--ink); z-index:29;}
+  .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; line-height:1; display:block;}
 
   /* 顶部视图切换 */
   .view-tabs{display:flex; align-items:stretch; padding:24px 28px 0;}
@@ -196,6 +197,7 @@
 </div>
 
 <button class="fab" id="fab" style="display:none;"><span class="cn" id="fabText">起一条线索</span></button>
+<div class="fab-pad" id="fabPad" style="display:none;"></div>
 
 <div class="sheet-bg" id="sheetBg"></div>
 
@@ -241,7 +243,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.11</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.12</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -307,7 +309,7 @@
     $('#galaxyView').style.display=v==='galaxy'?'block':'none';
     document.querySelector('.view-tabs').style.display='flex';
     
-    $('#fab').style.display=v==='list'?'block':'none';
+    $('#fab').style.display=v==='list'?'flex':'none'; $('#fabPad').style.display=v==='list'?'block':'none';
     $('#fabText').textContent='起一条线索';
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
     if(v==='list') renderList();
@@ -337,7 +339,7 @@
   function openThread(id){
     currentThread=id; view='detail'; editingKind=null;
     $('#listView').style.display='none'; $('#galaxyView').style.display='none'; $('#sortBar').style.display='none'; $('#detailView').style.display='block';
-    document.querySelector('.view-tabs').style.display='none'; $('#fab').style.display='none'; stopGalaxy(); renderDetail();
+    document.querySelector('.view-tabs').style.display='none'; $('#fab').style.display='none'; $('#fabPad').style.display='none'; stopGalaxy(); renderDetail();
     window.scrollTo(0,0);
   }
   function renderDetail(){
@@ -449,7 +451,7 @@
   $('#installBtn').addEventListener('click',async()=>{ if(!deferredPrompt)return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('#installBar').classList.remove('show'); });
   window.addEventListener('appinstalled',()=>$('#installBar').classList.remove('show'));
 
-  $('#fab').style.display='block';
+  $('#fab').style.display='flex'; $('#fabPad').style.display='block';
   renderList();
 })();
 </script>
