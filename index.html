@@ -103,17 +103,13 @@
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
-  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; height:calc(56px + env(safe-area-inset-bottom)); padding:0 0 env(safe-area-inset-bottom); border:none; width:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:30;}
-  .fab .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; text-indent:3px; line-height:1; display:block; transform:translateY(0.5px);}
+  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; height:calc(56px + env(safe-area-inset-bottom)); padding:0; border:none; width:100%; display:block; position:fixed; cursor:pointer; z-index:30;}
+  .fab .cn{position:absolute; left:50%; top:calc((100% - env(safe-area-inset-bottom)) / 2); transform:translate(-50%,-50%); font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; text-indent:3px; line-height:1; white-space:nowrap;}
 
   /* 顶部视图切换 */
   .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
-  .vtab{flex:1; text-align:center; background:none; border:none; padding:11px 6px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; transition:.15s;}
-  .vtab.on{background:var(--ink); color:var(--paper);}
-  .sorttri-btn{display:none; align-items:center; margin-left:10px; cursor:pointer; vertical-align:middle;}
-  .vtab.on .sorttri-btn{display:inline-flex;}
-  .sorttri-btn .tri{width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--paper); opacity:.8; transition:transform .18s;}
-  .sorttri-btn .tri.up{transform:rotate(180deg);}
+  .vtab{flex:1; text-align:center; background:none; border:none; padding:0 0 8px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; border-bottom:1px solid transparent;}
+  .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
   /* 浮层 */
   .sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
@@ -178,7 +174,7 @@
     <div class="installbar" id="installBar">添加到主屏幕<button id="installBtn">Install</button></div>
 
     <div class="view-tabs">
-      <button class="vtab on" data-view="list">Threads · 线索<span class="sorttri-btn" id="sortTri" title="最新"><span class="tri"></span></span></button>
+      <button class="vtab on" data-view="list">Threads · 线索</button>
       <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
     </div>
     <div id="listView">
@@ -240,7 +236,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.16</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.17</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -310,13 +306,6 @@
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
     if(v==='list') renderList();
   }
-
-  $('#sortTri').addEventListener('click',(e)=>{
-    e.stopPropagation();
-    sortMode = sortMode==='new'?'old':'new';
-    $('#sortTri').querySelector('.tri').classList.toggle('up', sortMode==='old');
-    $('#sortTri').title = sortMode==='new'?'最新':'最早';
-    renderList(); });
 
   function renderList(){
     const el=$('#threadList'); el.innerHTML='';
