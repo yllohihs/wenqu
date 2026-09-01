@@ -59,7 +59,7 @@
   .thread .tconcepts{font-size:11px; letter-spacing:.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .thread .tstage{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); margin-left:auto; white-space:nowrap;}
 
-  #threadList .thread:first-child{border-top:none;}
+  #threadList .thread:first-child{border-top:0.5px solid var(--line);}
   .empty{text-align:center; padding:80px 32px; color:var(--ink-faint);}
   .empty .big{font-size:17px; color:var(--ink-soft); margin-bottom:10px; letter-spacing:1px;}
   .empty .en{font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px;}
@@ -103,8 +103,9 @@
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
-  .fab{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); color:var(--paper); font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; height:calc(56px + env(safe-area-inset-bottom)); padding:0; border:none; width:100%; display:block; position:fixed; cursor:pointer; z-index:30;}
-  .fab .cn{position:absolute; left:50%; top:calc((100% - env(safe-area-inset-bottom)) / 2); transform:translate(-50%,-50%); font-family:'Noto Sans SC',sans-serif; letter-spacing:3px; text-indent:3px; line-height:1; white-space:nowrap;}
+  .fabwrap{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--ink); z-index:30; padding-bottom:env(safe-area-inset-bottom);}
+  .fab{width:100%; height:56px; background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400;}
+  .fab .cn{letter-spacing:3px; text-indent:3px; line-height:1;}
 
   /* 顶部视图切换 */
   .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
@@ -190,7 +191,7 @@
   </main>
 </div>
 
-<button class="fab" id="fab" style="display:none;"><span class="cn" id="fabText">起一条线索</span></button>
+<div class="fabwrap" id="fabWrap" style="display:none;"><button class="fab" id="fab"><span class="cn" id="fabText">起一条线索</span></button></div>
 
 <div class="sheet-bg" id="sheetBg"></div>
 
@@ -236,7 +237,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.17</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.18</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -301,7 +302,7 @@
     $('#galaxyView').style.display=v==='galaxy'?'block':'none';
     document.querySelector('.view-tabs').style.display='flex';
     
-    $('#fab').style.display=v==='list'?'flex':'none';
+    $('#fabWrap').style.display=v==='list'?'block':'none';
     $('#fabText').textContent='起一条线索';
     if(v==='galaxy'){ startGalaxy(); } else { stopGalaxy(); }
     if(v==='list') renderList();
@@ -325,7 +326,7 @@
   function openThread(id){
     currentThread=id; view='detail'; editingKind=null;
     $('#listView').style.display='none'; $('#galaxyView').style.display='none'; $('#detailView').style.display='block';
-    document.querySelector('.view-tabs').style.display='none'; $('#fab').style.display='none'; stopGalaxy(); renderDetail();
+    document.querySelector('.view-tabs').style.display='none'; $('#fabWrap').style.display='none'; stopGalaxy(); renderDetail();
     window.scrollTo(0,0);
   }
   function renderDetail(){
@@ -437,7 +438,7 @@
   $('#installBtn').addEventListener('click',async()=>{ if(!deferredPrompt)return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('#installBar').classList.remove('show'); });
   window.addEventListener('appinstalled',()=>$('#installBar').classList.remove('show'));
 
-  $('#fab').style.display='flex';
+  $('#fabWrap').style.display='block';
   renderList();
 })();
 </script>
