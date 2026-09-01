@@ -69,7 +69,7 @@
   .dtop{padding:calc(env(safe-area-inset-top) + 40px) 28px 0;}
   .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; background:none; border:none; padding:0;}
   .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text; outline:none; border-radius:2px;}
-  .dtitle:focus{box-shadow:0 2px 0 var(--line-strong,var(--line)); }
+  .dtitle:focus{box-shadow:0 1px 0 var(--line); }
   .dconcepts{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;}
   .dconcepts .cc{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); border:0.5px solid var(--line); padding:5px 11px; display:inline-flex; align-items:center; gap:7px;}
   .dconcepts .cc .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:.5px; text-transform:none;}
@@ -242,7 +242,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.2</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.3</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -355,6 +355,7 @@
     const dt=$('#dTitle');
     dt.addEventListener('blur',()=>{ const nv=dt.textContent.trim(); const t2=thread(currentThread); if(nv && nv!==t2.title){ t2.title=nv; save(); } else if(!nv){ dt.textContent=t2.title; } });
     dt.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); dt.blur(); } else if(e.key==='Escape'){ dt.textContent=thread(currentThread).title; dt.blur(); } });
+    document.addEventListener('pointerdown', function outclick(ev){ const d=document.querySelector('#dTitle'); if(!d){ document.removeEventListener('pointerdown',outclick); return; } if(document.activeElement===d && ev.target!==d){ d.blur(); } }, true);
     $('#dAddSeg').addEventListener('click',openSeg);
     $('#dAddConcept').addEventListener('click',openConceptSheet);
     document.querySelectorAll('#detailView .cc .x').forEach(x=>x.addEventListener('click',()=>detachConcept(x.getAttribute('data-cid'))));
