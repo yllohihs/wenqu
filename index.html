@@ -241,7 +241,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -292,9 +292,8 @@
   let view='list', currentThread=null, editingKind=null;
 
   function pad(n){ return (n<10?'0':'')+n; }
-  function fmtEn(t){ const d=new Date(t), now=new Date(); const days=Math.floor((now-d)/86400000);
-    if(days<=0) return 'today'; if(days===1) return '1 day ago'; if(days<30) return days+' days ago';
-    return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }
+  function fmtEn(t){ const d=new Date(t); const p=(n)=>(n<10?'0':'')+n;
+    return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
   function stageOf(t){ const l=lastEntry(t.id); return l?kInfo(l.kind).cn:'空'; }
 
   document.querySelectorAll('.vtab').forEach(t=>{ t.addEventListener('click',()=>{
@@ -362,7 +361,7 @@
     document.querySelectorAll('#detailView .sdel').forEach(d=>d.addEventListener('click',()=>{ if(confirm('删除这一段?')) delEntry(d.getAttribute('data-del')); }));
   }
   function editTitle(){ const t=thread(currentThread); const v=prompt('编辑线索标题', t.title); if(v!==null){ const nv=v.trim(); if(nv){ t.title=nv; save(); renderDetail(); } } }
-  function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ e.kind=k; editingKind=null; save(); renderDetail(); } }
+  function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ const wasUpdate=e.kind==='update'; e.kind=k; if(k==='update' && !wasUpdate){ e.createdAt=Date.now(); } editingKind=null; save(); renderDetail(); } }
   function delEntry(eid){ state.entries=state.entries.filter(x=>x.id!==eid); save(); renderDetail(); }
   function detachConcept(cid){ const t=thread(currentThread); t.conceptIds=t.conceptIds.filter(x=>x!==cid); save(); renderDetail(); }
 
@@ -394,7 +393,7 @@
   $('#sBody').addEventListener('input',()=>$('#sBody').classList.remove('err'));
   $('#sSave').addEventListener('click',()=>{ const body=$('#sBody').value.trim(); if(!body){ $('#sBody').classList.add('err'); $('#sBody').focus(); return; }
     const link=segKind==='source'?$('#sLink').value.trim():''; const source=segKind==='source'?$('#sSource').value.trim():'';
-    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); e.kind=segKind; e.body=body; e.link=link; e.source=source; save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; if(segKind==='update' && !wasUpdate){ e.createdAt=Date.now(); } save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
     else { state.entries.push({id:'e_'+Date.now(),threadId:currentThread,kind:segKind,body,link,source,createdAt:Date.now()}); save(); hideSheets(); renderDetail(); toast('已续一段'); }
   });
 
