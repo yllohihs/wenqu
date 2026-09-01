@@ -68,7 +68,7 @@
   .detail-wrap{padding:0;}
   .dtop{padding:calc(env(safe-area-inset-top) + 40px) 28px 0;}
   .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; background:none; border:none; padding:0;}
-  .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px;}
+  .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text;}
   .dconcepts{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;}
   .dconcepts .cc{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); border:0.5px solid var(--line); padding:5px 11px; display:inline-flex; align-items:center; gap:7px;}
   .dconcepts .cc .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:.5px; text-transform:none;}
@@ -89,6 +89,7 @@
   .seg .source a{color:inherit;}
   .seg .when{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1px; color:var(--ink-faint); margin-top:12px; display:flex; gap:14px; align-items:center;}
   .seg .sdel{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px;}
+  .seg .sedit{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft);}
   .kpick{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 4px 25px;}
   .kpick button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; padding:5px 10px; border:0.5px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer;}
   .kpick button .kcn{font-family:'Noto Sans SC',sans-serif;}
@@ -104,7 +105,7 @@
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
   .fabwrap{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; z-index:30;}
-  .fab{width:100%; height:calc(56px + env(safe-area-inset-bottom)); background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; padding:0; margin:0;}
+  .fab{width:100%; height:calc(50px + env(safe-area-inset-bottom) * 0.5); background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; padding:0; margin:0;}
   .fab .cn{letter-spacing:3px; text-indent:3px; line-height:1;}
 
   /* 顶部视图切换 */
@@ -136,6 +137,9 @@
   .ktab.on{background:var(--ink); color:var(--paper); border-color:var(--ink);}
 
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .chipwrap{display:inline-flex; align-items:center; gap:0;}
+  .chipwrap .chipdel{cursor:pointer; font-size:11px; color:var(--ink-faint); padding:0 6px; opacity:.6;}
+  .chipwrap .chipdel:hover{opacity:1; color:#C0563A;}
   .chip{font-size:12px; letter-spacing:.5px; padding:7px 13px; border:0.5px solid var(--line); color:var(--ink-soft); background:none; cursor:pointer; font-family:inherit;}
   .chip.on{background:var(--ink); color:var(--paper); border-color:var(--ink);}
 
@@ -209,7 +213,7 @@
 </div>
 
 <div class="sheet" id="segSheet">
-  <div class="sh-title">Add Entry · 续一段</div>
+  <div class="sh-title sh-title-seg">Add Entry · 续一段</div>
   <label>Type · 类型</label>
   <div class="ktabs" id="kTabs"></div>
   <label>Content · 内容</label>
@@ -237,7 +241,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.4.19</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -339,22 +343,25 @@
       if(editingKind===e.id){ segs+='<div class="kpick">'; KINDS.forEach(k=>{ segs+='<button data-eid="'+e.id+'" data-k="'+k.k+'"><span class="kcn">'+k.cn+'</span></button>'; }); segs+='</div>'; }
       segs+='<div class="sbody">'+esc(e.body)+'</div>';
       if(e.kind==='source' && (e.source||e.link)){ segs+='<div class="source">'; if(e.link){ segs+='<a href="'+esc(e.link)+'" target="_blank" rel="noopener">'+esc(e.source||e.link)+'</a>'; } else { segs+=esc(e.source); } segs+='</div>'; }
-      segs+='<div class="when">'+fmtEn(e.createdAt)+'<span class="sdel" data-del="'+e.id+'">delete</span></div>';
+      segs+='<div class="when">'+fmtEn(e.createdAt)+'<span class="sedit" data-edit="'+e.id+'">edit</span><span class="sdel" data-del="'+e.id+'">delete</span></div>';
       segs+='</div>';
     });
     $('#detailView').innerHTML=
-      '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle">'+esc(t.title)+'</div>'+
+      '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
       '<div class="timeline">'+segs+'</div>'+
       '<div class="addseg" id="dAddSeg">＋ Add Entry · 续一段</div><div style="height:100px"></div>';
     $('#dBack').addEventListener('click',()=>switchView('list'));
+    $('#dTitle').addEventListener('click',editTitle);
     $('#dAddSeg').addEventListener('click',openSeg);
     $('#dAddConcept').addEventListener('click',openConceptSheet);
     document.querySelectorAll('#detailView .cc .x').forEach(x=>x.addEventListener('click',()=>detachConcept(x.getAttribute('data-cid'))));
     document.querySelectorAll('#detailView .ktag').forEach(l=>l.addEventListener('click',()=>{ editingKind=editingKind===l.getAttribute('data-eid')?null:l.getAttribute('data-eid'); renderDetail(); }));
     document.querySelectorAll('#detailView .kpick button').forEach(b=>b.addEventListener('click',()=>changeKind(b.getAttribute('data-eid'),b.getAttribute('data-k'))));
+    document.querySelectorAll('#detailView .sedit').forEach(d=>d.addEventListener('click',()=>openSeg(d.getAttribute('data-edit'))));
     document.querySelectorAll('#detailView .sdel').forEach(d=>d.addEventListener('click',()=>{ if(confirm('删除这一段?')) delEntry(d.getAttribute('data-del')); }));
   }
+  function editTitle(){ const t=thread(currentThread); const v=prompt('编辑线索标题', t.title); if(v!==null){ const nv=v.trim(); if(nv){ t.title=nv; save(); renderDetail(); } } }
   function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ e.kind=k; editingKind=null; save(); renderDetail(); } }
   function delEntry(eid){ state.entries=state.entries.filter(x=>x.id!==eid); save(); renderDetail(); }
   function detachConcept(cid){ const t=thread(currentThread); t.conceptIds=t.conceptIds.filter(x=>x!==cid); save(); renderDetail(); }
@@ -362,7 +369,7 @@
   const sheetBg=$('#sheetBg');
   let tSelConcepts=[];
   function showSheet(id){ sheetBg.classList.add('show'); $(id).classList.add('show'); }
-  function hideSheets(){ sheetBg.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); }
+  function hideSheets(){ sheetBg.classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); editingEntryId=null; const st=$('.sh-title-seg'); if(st) st.textContent='Add Entry · 续一段'; }
   sheetBg.addEventListener('click',hideSheets);
 
   function openThreadSheet(){ tSelConcepts=[]; $('#tTitle').value=''; $('#tNewConcept').value=''; $('#tTitle').classList.remove('err'); renderTConceptChips(); showSheet('#threadSheet'); setTimeout(()=>$('#tTitle').focus(),280); }
@@ -374,16 +381,36 @@
   $('#tTitle').addEventListener('input',()=>$('#tTitle').classList.remove('err'));
   $('#tSave').addEventListener('click',()=>{ const title=$('#tTitle').value.trim(); if(!title){ $('#tTitle').classList.add('err'); $('#tTitle').focus(); return; } const id='t_'+Date.now(); state.threads.push({id,title,conceptIds:tSelConcepts.slice(),createdAt:Date.now()}); save(); hideSheets(); toast('线索起好了'); openThread(id); });
 
-  let segKind='iterate';
-  function openSeg(){ segKind='iterate'; $('#sBody').value=''; $('#sSource').value=''; $('#sLink').value=''; $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); showSheet('#segSheet'); setTimeout(()=>$('#sBody').focus(),280); }
+  let segKind='iterate', editingEntryId=null;
+  function openSeg(eid){
+    editingEntryId = (typeof eid==='string') ? eid : null;
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
+    else { segKind='iterate'; $('#sBody').value=''; $('#sSource').value=''; $('#sLink').value=''; }
+    $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); showSheet('#segSheet'); setTimeout(()=>$('#sBody').focus(),280);
+  }
   function updateSourceState(){ const on=segKind==='source'; $('#sourceFields').classList.toggle('dim',!on); $('#sSource').disabled=!on; $('#sLink').disabled=!on; $('#sourceHint').innerHTML=on?'Source · 来源':'Source · 来源(选“引申”时可填)'; }
   function renderKTabs(){ const box=$('#kTabs'); box.innerHTML=''; KINDS.forEach(k=>{ const b=document.createElement('button'); b.className='ktab'+(segKind===k.k?' on':''); b.innerHTML='<span class="kcn">'+k.cn+'</span>'; b.addEventListener('click',()=>{ segKind=k.k; updateSourceState(); renderKTabs(); }); box.appendChild(b); }); }
   $('#sCancel').addEventListener('click',hideSheets);
   $('#sBody').addEventListener('input',()=>$('#sBody').classList.remove('err'));
-  $('#sSave').addEventListener('click',()=>{ const body=$('#sBody').value.trim(); if(!body){ $('#sBody').classList.add('err'); $('#sBody').focus(); return; } state.entries.push({id:'e_'+Date.now(),threadId:currentThread,kind:segKind,body,link:segKind==='source'?$('#sLink').value.trim():'',source:segKind==='source'?$('#sSource').value.trim():'',createdAt:Date.now()}); save(); hideSheets(); renderDetail(); toast('已续一段'); });
+  $('#sSave').addEventListener('click',()=>{ const body=$('#sBody').value.trim(); if(!body){ $('#sBody').classList.add('err'); $('#sBody').focus(); return; }
+    const link=segKind==='source'?$('#sLink').value.trim():''; const source=segKind==='source'?$('#sSource').value.trim():'';
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); e.kind=segKind; e.body=body; e.link=link; e.source=source; save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
+    else { state.entries.push({id:'e_'+Date.now(),threadId:currentThread,kind:segKind,body,link,source,createdAt:Date.now()}); save(); hideSheets(); renderDetail(); toast('已续一段'); }
+  });
 
   function openConceptSheet(){ renderAttachChips(); $('#attachNew').value=''; showSheet('#conceptSheet'); }
-  function renderAttachChips(){ const t=thread(currentThread); const box=$('#attachChips'); box.innerHTML=''; state.concepts.forEach(c=>{ const on=t.conceptIds.includes(c.id); const chip=document.createElement('button'); chip.className='chip'+(on?' on':''); chip.textContent=c.label; chip.addEventListener('click',()=>{ if(on){ t.conceptIds=t.conceptIds.filter(x=>x!==c.id); } else { t.conceptIds.push(c.id); } save(); renderAttachChips(); }); box.appendChild(chip); }); }
+  function renderAttachChips(){ const t=thread(currentThread); const box=$('#attachChips'); box.innerHTML='';
+    state.concepts.forEach(c=>{ const on=t.conceptIds.includes(c.id);
+      const wrap=document.createElement('span'); wrap.className='chipwrap';
+      const chip=document.createElement('button'); chip.className='chip'+(on?' on':''); chip.textContent=c.label;
+      chip.addEventListener('click',()=>{ if(on){ t.conceptIds=t.conceptIds.filter(x=>x!==c.id); } else { t.conceptIds.push(c.id); } save(); renderAttachChips(); });
+      const del=document.createElement('span'); del.className='chipdel'; del.textContent='✕'; del.title='彻底删除这个概念';
+      del.addEventListener('click',(e)=>{ e.stopPropagation(); if(confirm('删除概念"'+c.label+'"?它会从所有线索移除。')){ deleteConcept(c.id); } });
+      wrap.appendChild(chip); wrap.appendChild(del); box.appendChild(wrap);
+    });
+    if(state.concepts.length===0){ box.innerHTML='<span style="font-size:12px;color:var(--ink-faint);">还没有概念,下面输入添加</span>'; }
+  }
+  function deleteConcept(cid){ state.concepts=state.concepts.filter(c=>c.id!==cid); state.threads.forEach(t=>{ t.conceptIds=t.conceptIds.filter(x=>x!==cid); }); save(); renderAttachChips(); }
   $('#attachNew').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); const v=e.target.value.trim(); if(!v)return; const id=newConcept(v); thread(currentThread).conceptIds.push(id); e.target.value=''; save(); renderAttachChips(); } });
   $('#attachDone').addEventListener('click',()=>{ hideSheets(); renderDetail(); });
 
