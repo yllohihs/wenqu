@@ -1,4 +1,4 @@
-const CACHE = 'wenqu-1.5.5';
+const CACHE = 'wenqu-1.5.6';
 const ASSETS = [
   './',
   './index.html',
