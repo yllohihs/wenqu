@@ -23,9 +23,11 @@
     }
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
+  html{height:100%; background:var(--paper);}
+  body{min-height:100%;}
   body{font-family:'Noto Sans SC','Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; overscroll-behavior-y:none; -webkit-font-smoothing:antialiased;}
   .en{font-family:'Inter',sans-serif;}
+  .safetop{position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:var(--paper); z-index:100;}
   .wrap{max-width:600px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
   ::-webkit-scrollbar{display:none;}
 
@@ -67,7 +69,8 @@
   /* 详情 */
   .detail-wrap{padding:0;}
   .dtop{padding:calc(env(safe-area-inset-top) + 40px) 28px 0;}
-  .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; background:none; border:none; padding:0;}
+  .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--paper); cursor:pointer; display:inline-flex; align-items:center; gap:7px; margin-bottom:28px; background:var(--ink); border:none; padding:8px 14px;}
+  .back:active{opacity:.8;}
   .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text; outline:none; border-radius:2px;}
   .dtitle:focus{box-shadow:0 1px 0 var(--line); }
   .dconcepts{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;}
@@ -168,6 +171,7 @@
 </style>
 </head>
 <body>
+<div class="safetop" aria-hidden="true"></div>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -242,7 +246,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.3</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.5</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
