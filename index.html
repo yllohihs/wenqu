@@ -106,9 +106,9 @@
   .kpick button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; padding:5px 10px; border:0.5px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer;}
   .kpick button .kcn{font-family:'Noto Sans SC',sans-serif;}
 
-  .detail-foot{display:flex; gap:10px; margin:8px 28px 0;}
+  .detail-foot{display:flex; flex-direction:column; gap:10px; margin:8px 28px 0;}
   .addseg{flex:1; text-align:center; padding:15px; border:0.5px solid var(--line); font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:1px; color:var(--ink-soft); cursor:pointer; transition:.15s; background:none;}
-  .addseg.alt{color:var(--ink); border-color:var(--line-strong,var(--line)); border-color:rgba(22,21,19,.2);}
+
   .addseg:hover{background:var(--ink); color:var(--paper); border-color:var(--ink);}
 
   /* 脉络 */
@@ -120,6 +120,16 @@
   .glx-analyze button{font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:2px; color:var(--paper); background:var(--ink); border:none; padding:13px 28px; cursor:pointer;}
   .glx-analyze button:disabled{opacity:.5; cursor:default;}
   .glx-analyze-note{font-size:11px; color:var(--ink-faint); margin-top:10px; letter-spacing:.3px; line-height:1.6;}
+  .az-notice{font-size:13px; line-height:1.7; color:var(--ink); margin-bottom:20px;}
+  .az-notice p{margin:0 0 10px;}
+  .az-notice .az-dim{font-size:12px; color:var(--ink-soft); line-height:1.9;}
+  .az-pick-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .az-pick-head span{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint);}
+  .az-pick-head button{font-size:11px; color:var(--ink-soft); background:none; border:none; cursor:pointer; letter-spacing:.3px;}
+  .az-list{max-height:34vh; overflow-y:auto; margin-bottom:18px;}
+  .az-item{display:flex; align-items:flex-start; gap:10px; padding:9px 0; cursor:pointer; border-bottom:0.5px solid var(--line-soft);}
+  .az-item input{margin-top:3px; flex-shrink:0; accent-color:var(--ink);}
+  .az-item span{font-size:14px; line-height:1.5; color:var(--ink);}
   .analyze-body{font-size:14px; line-height:1.8; color:var(--ink); white-space:pre-wrap; word-break:break-word; max-height:60vh; overflow-y:auto; letter-spacing:.2px; margin-bottom:8px;}
   .analyze-body .loading{color:var(--ink-faint); text-align:center; padding:30px 0;}
 
@@ -296,8 +306,24 @@
 
 <div class="sheet" id="analyzeSheet">
   <div class="sh-title">AI 脉络分析</div>
-  <div class="analyze-body" id="analyzeBody"></div>
-  <div class="sheet-foot"><button class="btn primary" id="analyzeDone">好</button></div>
+  <!-- 阶段一:知情+选择范围 -->
+  <div id="analyzeIntro">
+    <div class="az-notice">
+      <p>分析会把你<b>选中线索</b>的标题、概念和片段内容,发送给 <b>Claude(Anthropic)</b> 分析,找出隐藏关联、建议概念。</p>
+      <p class="az-dim">· 只发送你下面勾选的线索,可自己选范围<br>· 分析结果仅显示给你,<b>不会保存</b>到云端<br>· 每月限 2 次</p>
+    </div>
+    <div class="az-pick-head"><span>选择要分析的线索</span><button id="azToggleAll">全选/全不选</button></div>
+    <div class="az-list" id="azList"></div>
+    <div class="sheet-foot">
+      <button class="btn" id="azCancel">取消</button>
+      <button class="btn primary" id="azGo">开始分析</button>
+    </div>
+  </div>
+  <!-- 阶段二:结果 -->
+  <div id="analyzeResult" style="display:none;">
+    <div class="analyze-body" id="analyzeBody"></div>
+    <div class="sheet-foot"><button class="btn primary" id="analyzeDone">好</button></div>
+  </div>
 </div>
 
 <div class="panel" id="panel">
@@ -307,7 +333,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.7.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -322,6 +348,11 @@
   let sb=null, session=null, syncing=false, cloudReady=false, syncFailed=false;
   try{ if(window.supabase){ sb=window.supabase.createClient(SB_URL, SB_KEY); } }catch(e){}
 
+
+  /* ═══════════════════════════════════════════════════════
+     模块:SYNC · 云同步
+     cloudPull 拉取 / cloudPush 事务化推送(replace_all_data RPC) / cloudReady 写入守卫
+     ═══════════════════════════════════════════════════════ */
   async function cloudPull(){
     if(!sb||!session) return null;
     try{
@@ -389,13 +420,20 @@
       {id:'e2',threadId:'t1',kind:'source',body:'过度疲劳时身体会分泌皮质醇和肾上腺素维持清醒,这是一种应激反应,反而压制了睡意。',link:'',source:'Matthew Walker,《Why We Sleep》',createdAt:Date.now()-86400000*9},
       {id:'e3',threadId:'t1',kind:'iterate',body:'那是不是只要避免过度疲劳就行?似乎还不够——错过了自己的"睡眠窗口"也会这样,生物钟比疲劳程度更关键。',link:'',source:'',createdAt:Date.now()-86400000*7},
       {id:'e4',threadId:'t1',kind:'conclude',body:'难入睡不是因为不够累,而是错过睡眠窗口后,应激激素接管了身体。规律作息比"熬到累"更重要。',link:'',source:'',createdAt:Date.now()-86400000*7},
-      {id:'e5',threadId:'t1',round:2,kind:'iterate',body:'实践两周后回头看:固定起床时间比固定睡觉时间更有效——起床时间稳了,睡意自然会在同一时段出现。之前的结论要补一条。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e5',threadId:'t1',round:2,kind:'ask',body:'两周后冒出个新疑问:既然生物钟这么关键,那"固定起床"和"固定睡觉",哪个才是稳住生物钟的锚点?',link:'',source:'',createdAt:Date.now()-86400000*2,occurredAt:Date.now()-86400000*2},
+      {id:'e5b',threadId:'t1',round:2,kind:'source',body:'查到:光照是生物钟最强的校准信号,而起床后见光的时间最稳定、最可控。所以起床时间比睡觉时间更适合当锚点。',link:'',source:'Huberman Lab · 晨间光照与昼夜节律',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e5c',threadId:'t1',round:2,kind:'conclude',body:'修正第一轮的结论:与其纠结几点睡,不如固定起床时间+起床后尽快见光。锚住起点,睡意会自己回到该来的时段。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
       {id:'e6',threadId:'t2',kind:'ask',body:'25分钟工作+5分钟休息,这个节奏为什么被认为有效?还是只是心理安慰?',link:'',source:'',createdAt:Date.now()-86400000*4},
       {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字,而在于"给自己一个明确的、短到不抗拒的开始",降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3}
     ]
   };
 
   let state=load();
+
+  /* ═══════════════════════════════════════════════════════
+     模块:STORAGE · 本地存储
+     load/save 读写 localStorage / save0 只写本地不触发云推 / SEED 示例数据
+     ═══════════════════════════════════════════════════════ */
   function load(){ try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){} return JSON.parse(JSON.stringify(SEED)); }
   let pushTimer=null;
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
@@ -428,6 +466,11 @@
 
   document.querySelectorAll('.vtab').forEach(t=>{ t.addEventListener('click',()=>{
     document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); switchView(t.dataset.view); }); });
+
+  /* ═══════════════════════════════════════════════════════
+     模块:UI-LIST · 列表与导航
+     switchView 视图切换 / renderList 线索列表 / openThread 进详情
+     ═══════════════════════════════════════════════════════ */
   function switchView(v){
     view=v; currentThread=null;
     $('#listView').style.display=v==='list'?'block':'none';
@@ -462,6 +505,11 @@
     document.querySelector('.view-tabs').style.display='none'; $('#fabWrap').style.display='none'; stopGalaxy(); renderDetail();
     window.scrollTo(0,0);
   }
+
+  /* ═══════════════════════════════════════════════════════
+     模块:UI-DETAIL · 线索详情
+     时间线渲染(按轮次分组) / 加改删片段 / 标题原地编辑 / 概念挂载
+     ═══════════════════════════════════════════════════════ */
   function renderDetail(){
     const t=thread(currentThread); if(!t){ switchView('list'); return; }
     let concepts=t.conceptIds.map(id=>{const c=concept(id); return c?'<span class="cc"><span class="cn">'+esc(c.label)+'</span><span class="x" data-cid="'+id+'">✕</span></span>':'';}).join('');
@@ -570,15 +618,40 @@
   $('#attachDone').addEventListener('click',()=>{ hideSheets(); renderDetail(); });
 
   // ===== AI 脉络分析 =====
-  async function runAnalyze(){
+  let azSelected={};  // 选中的线索 id
+
+  /* ═══════════════════════════════════════════════════════
+     模块:ANALYSIS · AI 脉络分析
+     runAnalyze 知情+选范围 / doAnalyze 发送选中线索给 Claude(经 Edge Function)
+     ═══════════════════════════════════════════════════════ */
+  function runAnalyze(){
     if(!sb||!session){ toast('请先登录再用 AI 分析'); return; }
     if(!state.threads.length){ toast('还没有线索可分析'); return; }
-    const btn=$('#analyzeBtn'); btn.disabled=true; btn.textContent='分析中…';
-    $('#analyzeBody').innerHTML='<div class="loading">AI 正在读你的线索,请稍候…<br>(约 10-20 秒)</div>';
+    // 默认全选
+    azSelected={}; state.threads.forEach(t=>azSelected[t.id]=true);
+    renderAzList();
+    $('#analyzeIntro').style.display='block';
+    $('#analyzeResult').style.display='none';
     showSheet('#analyzeSheet');
+  }
+  function renderAzList(){
+    const box=$('#azList'); box.innerHTML='';
+    state.threads.forEach(t=>{
+      const row=document.createElement('label'); row.className='az-item';
+      const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!azSelected[t.id];
+      cb.addEventListener('change',()=>{ azSelected[t.id]=cb.checked; });
+      const span=document.createElement('span'); span.textContent=t.title;
+      row.appendChild(cb); row.appendChild(span); box.appendChild(row);
+    });
+  }
+  async function doAnalyze(){
+    const chosen=state.threads.filter(t=>azSelected[t.id]);
+    if(!chosen.length){ toast('至少选一条线索'); return; }
+    $('#analyzeIntro').style.display='none';
+    $('#analyzeResult').style.display='block';
+    $('#analyzeBody').innerHTML='<div class="loading">AI 正在读你选中的线索,请稍候…<br>(约 10-20 秒)</div>';
     try{
-      // 精简线索数据:标题 + 概念 + 各片段正文
-      const payload=state.threads.map(t=>({
+      const payload=chosen.map(t=>({
         title:t.title,
         concepts:(t.conceptIds||[]).map(id=>{const c=concept(id);return c?c.label:'';}).filter(Boolean),
         entries:entriesOf(t.id).map(e=>({type:kInfo(e.kind).cn, text:e.body}))
@@ -593,10 +666,14 @@
       if(!res.ok){ $('#analyzeBody').innerHTML='<div class="loading">'+esc(data.error||'分析失败')+'</div>'; }
       else { $('#analyzeBody').textContent=data.suggestion; }
     }catch(err){ $('#analyzeBody').innerHTML='<div class="loading">出错了:'+esc(String(err))+'</div>'; }
-    btn.disabled=false; btn.textContent='✦ AI 脉络分析';
   }
 
   const svg=$('#galaxy'); let raf=null, selected=null, dragId=null, alpha=0; const vel={};
+
+  /* ═══════════════════════════════════════════════════════
+     模块:GRAPH · 脉络图
+     力导向布局(tick) / 概念节点+共现连边 / 拖动与选中
+     ═══════════════════════════════════════════════════════ */
   function computeLinks(){ const set=new Set(),links=[]; state.threads.forEach(t=>{const cs=t.conceptIds; for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const key=[cs[i],cs[j]].sort().join('|'); if(!set.has(key)){set.add(key);links.push([cs[i],cs[j]]);}}}); return links; }
   function threadCount(cid){ return state.threads.filter(t=>t.conceptIds.includes(cid)).length; }
   function startGalaxy(){ state.concepts.forEach(c=>{ if(c.x===undefined)c.x=200+(Math.random()-.5)*120; if(c.y===undefined)c.y=200+(Math.random()-.5)*120; vel[c.id]=vel[c.id]||{vx:0,vy:0}; }); alpha=1; if(!raf) tick(); renderGalaxy(); }
@@ -631,12 +708,20 @@
     if(selected){ const ts=state.threads.filter(t=>t.conceptIds.includes(id)); const titles=ts.slice(0,2).map(t=>t.title).join(' / '); hint.innerHTML='<b>'+esc(c.label)+'</b> · '+cnt+' 条线索'+(titles?' · '+esc(titles)+(ts.length>2?'…':''):''); }
     else { hint.textContent='拖动节点换位置,点一下看这个概念下有哪些线索'; } renderGalaxy(); }
 
+
+  /* ═══════════════════════════════════════════════════════
+     模块:AUTH · 账号
+     登录/注册/登出 / 忘记+修改密码 / afterLogin 处理本地云端冲突
+     ═══════════════════════════════════════════════════════ */
   function refreshAcct(){ const l=$('#acctLabel'),d=$('#acctDesc'),b=$('#acctBtn');
     $('#pwRow').style.display = session ? 'flex' : 'none';
     if(session){ l.textContent=session.user.email; l.classList.add('acct-email'); d.textContent='已云端同步'; b.textContent='登出'; }
     else { l.textContent='未登录'; l.classList.remove('acct-email'); d.textContent='登录后数据云端同步,换设备不丢'; b.textContent='登录'; } }
   $('#analyzeBtn').addEventListener('click',runAnalyze);
   $('#analyzeDone').addEventListener('click',hideSheets);
+  $('#azCancel').addEventListener('click',hideSheets);
+  $('#azGo').addEventListener('click',doAnalyze);
+  $('#azToggleAll').addEventListener('click',()=>{ const all=state.threads.every(t=>azSelected[t.id]); state.threads.forEach(t=>azSelected[t.id]=!all); renderAzList(); });
   $('#gearBtn').addEventListener('click',()=>{ refreshAcct(); $('#panel').classList.add('show'); });
   $('#pwBtn').addEventListener('click',async()=>{
     if(!sb||!session){ return; }
@@ -659,6 +744,11 @@
 
   // ===== 登录/注册/登出 交互 =====
   const authView=$('#authView');
+
+  /* ═══════════════════════════════════════════════════════
+       (AUTH 续:登录界面控制)
+     showAuth/hideAuth/authErr
+     ═══════════════════════════════════════════════════════ */
   function showAuth(){ authView.classList.remove('hide'); }
   function hideAuth(){ authView.classList.add('hide'); }
   function authErr(msg){ $('#authErr').textContent=msg||''; }
@@ -737,6 +827,11 @@
   $('#authSkip').addEventListener('click',()=>{ hideAuth(); switchView('list'); });
   $('#authPass').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSignin(); });
 
+
+  /* ═══════════════════════════════════════════════════════
+     模块:PWA + BOOT · 离线与启动
+     service worker 注册 / 安装提示 / boot 启动流程(判断登录→拉云端)
+     ═══════════════════════════════════════════════════════ */
   if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{})); }
   let deferredPrompt=null;
   window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; $('#installBar').classList.add('show'); });
