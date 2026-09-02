@@ -212,7 +212,6 @@
       <input class="auth-field" id="authPass" type="password" placeholder="密码(至少 6 位)" autocomplete="current-password" />
       <div class="auth-err" id="authErr"></div>
       <button class="auth-btn" id="authSignin">登录</button>
-      <button class="auth-btn ghost" id="authSignup">注册新账号</button>
     </div>
     <div class="auth-forgot" id="authForgot">忘记密码?</div>
     <div class="auth-skip" id="authSkip">先不登录,仅在本机使用 →</div>
@@ -301,7 +300,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.3.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.5.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -313,7 +312,7 @@
   // ===== Supabase 云同步 =====
   const SB_URL='https://suizcgearwtxksywwnbx.supabase.co';
   const SB_KEY='sb_publishable_Po6OtdXBFR-ARLfrCq3q_A_YwCItkcF';
-  let sb=null, session=null, syncing=false;
+  let sb=null, session=null, syncing=false, cloudReady=false, syncFailed=false;
   try{ if(window.supabase){ sb=window.supabase.createClient(SB_URL, SB_KEY); } }catch(e){}
 
   async function cloudPull(){
@@ -337,33 +336,30 @@
     }catch(err){ return null; }
   }
 
-  let cloudReady=false;  // 写入守卫:只有云端状态已确认(拉取过或确认为空),才允许推送覆盖
+  // 写入守卫 cloudReady:只有云端状态已确认(拉取过或确认为空),才允许推送覆盖(声明在上方)
   async function cloudPush(force){
-    if(!sb||!session||syncing) return;
+    if(!sb||!session||syncing) return false;
     // 守卫:云端尚未就绪时,禁止用当前 state 覆盖云端(防止空数据抹掉云端真实数据)
-    // force=true 仅用于"清空"等明确的用户操作
-    if(!cloudReady && !force){ return; }
+    if(!cloudReady && !force){ return false; }
     syncing=true;
+    let ok=false;
     try{
-      const uid=session.user.id;
-      // 全量覆盖:先删自己的,再插入当前 state(小数据量,简单可靠)
-      await Promise.all([
-        sb.from('thread_concepts').delete().eq('user_id',uid),
-        sb.from('entries').delete().eq('user_id',uid),
-        sb.from('threads').delete().eq('user_id',uid),
-        sb.from('concepts').delete().eq('user_id',uid)
-      ]);
-      if(state.concepts.length)
-        await sb.from('concepts').insert(state.concepts.map(c=>({id:c.id,label:c.label,x:c.x,y:c.y,user_id:uid})));
-      if(state.threads.length)
-        await sb.from('threads').insert(state.threads.map(t=>({id:t.id,title:t.title,user_id:uid,created_at:new Date(t.createdAt).toISOString()})));
-      if(state.entries.length)
-        await sb.from('entries').insert(state.entries.map(e=>({id:e.id,thread_id:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',user_id:uid,created_at:new Date(e.createdAt).toISOString()})));
-      const tcRows=[];
-      state.threads.forEach(t=>(t.conceptIds||[]).forEach(cid=>tcRows.push({thread_id:t.id,concept_id:cid,user_id:uid})));
-      if(tcRows.length) await sb.from('thread_concepts').insert(tcRows);
-    }catch(err){}
+      // 组装关联表数据
+      const tc=[];
+      state.threads.forEach(t=>(t.conceptIds||[]).forEach(cid=>tc.push({threadId:t.id, conceptId:cid})));
+      // 事务化全量替换:一次 RPC 完成"清空+写入",数据库保证要么全成、要么回滚到原样。
+      // 杜绝了旧版"删一半断了"的残缺状态。
+      const {error}=await sb.rpc('replace_all_data',{
+        p_concepts: state.concepts.map(c=>({id:c.id,label:c.label,x:c.x,y:c.y})),
+        p_threads: state.threads.map(t=>({id:t.id,title:t.title,createdAt:t.createdAt})),
+        p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt})),
+        p_thread_concepts: tc
+      });
+      if(error){ console.error('云同步失败:',error.message); syncFailed=true; }
+      else { ok=true; syncFailed=false; }
+    }catch(err){ console.error('云同步异常:',err); syncFailed=true; }
     syncing=false;
+    return ok;
   }
 
   const cssv=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -403,7 +399,9 @@
   const concept=(id)=>state.concepts.find(c=>c.id===id);
   const thread=(id)=>state.threads.find(t=>t.id===id);
   const entriesOf=(tid)=>state.entries.filter(e=>e.threadId===tid).sort((a,b)=>a.createdAt-b.createdAt);
-  const esc=(s)=>(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  const esc=(s)=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+  // 链接协议白名单:只允许 http(s),挡住 javascript:/data: 等 XSS 入口
+  const safeUrl=(u)=>{ u=(u||'').trim(); return /^https?:\/\//i.test(u)?u:''; };
   const lastEntry=(tid)=>{ const es=entriesOf(tid); return es[es.length-1]; };
   const activeTime=(t)=>{ const l=lastEntry(t.id); return l?l.createdAt:t.createdAt; };
 
@@ -459,7 +457,7 @@
       segs+='<div class="ktag" data-eid="'+e.id+'"><span class="kcn">'+ki.cn+'</span> '+ki.en+'</div>';
       if(editingKind===e.id){ segs+='<div class="kpick">'; KINDS.forEach(k=>{ segs+='<button data-eid="'+e.id+'" data-k="'+k.k+'"><span class="kcn">'+k.cn+'</span></button>'; }); segs+='</div>'; }
       segs+='<div class="sbody">'+esc(e.body)+'</div>';
-      if(e.kind==='source' && (e.source||e.link)){ segs+='<div class="source">'; if(e.link){ segs+='<a href="'+esc(e.link)+'" target="_blank" rel="noopener">'+esc(e.source||e.link)+'</a>'; } else { segs+=esc(e.source); } segs+='</div>'; }
+      if(e.kind==='source' && (e.source||e.link)){ segs+='<div class="source">'; const su=safeUrl(e.link); if(su){ segs+='<a href="'+esc(su)+'" target="_blank" rel="noopener noreferrer">'+esc(e.source||su)+'</a>'; } else { segs+=esc(e.source||e.link); } segs+='</div>'; }
       segs+='<div class="when">'+fmtEn(e.createdAt)+'<span class="sedit" data-edit="'+e.id+'">edit</span><span class="sdel" data-del="'+e.id+'">delete</span></div>';
       segs+='</div>';
     });
@@ -656,11 +654,28 @@
   async function afterLogin(){
     hideAuth(); toast('已登录,正在同步…');
     const cloud=await cloudPull();
-    if(cloud===null){ toast('同步失败,请检查网络'); switchView('list'); return; }  // 拉取失败,不标记就绪,禁止覆盖云端
-    cloudReady=true;  // 云端状态已确认
-    if(cloud.threads.length||cloud.concepts.length){ state=cloud; save0(); }
-    else if(state.threads.length){ await cloudPush(true); }  // 云端空,本地有,首次上传
-    switchView('list'); toast('已同步');
+    if(cloud===null){ toast('同步失败,请检查网络'); switchView('list'); return; }
+    cloudReady=true;
+    const cloudHas = cloud.threads.length||cloud.concepts.length;
+    const localHas = state.threads.length||state.concepts.length;
+    if(cloudHas && localHas){
+      // 两边都有数据 → 冲突,让用户选,绝不静默覆盖(评审第5条:迁移陷阱)
+      const useLocal = confirm(
+        '本机和云端都有内容。\n\n' +
+        '· 点「确定」用【本机】内容覆盖云端(云端现有会被替换)\n' +
+        '· 点「取消」用【云端】内容覆盖本机(本机现有会被替换)\n\n' +
+        '建议先在设置里导出备份。拿不准就点取消(保留云端)。'
+      );
+      if(useLocal){ await cloudPush(true); toast('已用本机内容同步到云端'); }
+      else { state=cloud; save0(); toast('已载入云端内容'); }
+    } else if(cloudHas){
+      state=cloud; save0(); toast('已同步');
+    } else if(localHas){
+      await cloudPush(true); toast('已同步');
+    } else {
+      toast('已登录');
+    }
+    switchView('list');
   }
   function save0(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -671,7 +686,7 @@
   }
 
   $('#authSignin').addEventListener('click',doSignin);
-  $('#authSignup').addEventListener('click',doSignup);
+  { const su=$('#authSignup'); if(su) su.addEventListener('click',doSignup); }  // 注册按钮当前隐藏(仅所有者使用),以后开放时恢复
   $('#authForgot').addEventListener('click',async()=>{
     if(!sb){ authErr('网络未就绪'); return; }
     const email=$('#authEmail').value.trim();
