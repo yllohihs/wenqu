@@ -16,6 +16,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+  /* ⚠ 设计约束(血泪教训):iOS 在 status-bar default 模式下会采样网页顶端像素给状态栏上色并缓存。
+     任何全屏遮罩/浮层若用半透明压暗(rgba(0,0,0,.x)),开启瞬间被采样 → 状态栏被染脏色 → 直到重启不恢复。
+     因此本项目所有全屏遮罩一律用【纯 backdrop-filter 模糊 + background:transparent】,不含任何压暗成分。
+     新增浮层务必遵守,否则灰框/脏状态栏会回来。 */
   :root{
     --sat:env(safe-area-inset-top);
     --sab:env(safe-area-inset-bottom);
@@ -116,7 +120,7 @@
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
   /* 浮层 */
-  .sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
+  .sheet-bg{position:fixed; inset:0; background:transparent; backdrop-filter:blur(7px) saturate(0.95); -webkit-backdrop-filter:blur(7px) saturate(0.95); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
   .sheet-bg.show{opacity:1; pointer-events:auto;}
   .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(var(--sab) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
   .sheet.show{transform:none;}
