@@ -18,8 +18,8 @@
 <style>
   /* ⚠ 设计约束(血泪教训):iOS 在 status-bar default 模式下会采样网页顶端像素给状态栏上色并缓存。
      任何全屏遮罩/浮层若用半透明压暗(rgba(0,0,0,.x)),开启瞬间被采样 → 状态栏被染脏色 → 直到重启不恢复。
-     因此本项目所有全屏遮罩一律用【纯 backdrop-filter 模糊 + background:transparent】,不含任何压暗成分。
-     新增浮层务必遵守,否则灰框/脏状态栏会回来。 */
+     因此本项目所有全屏遮罩背景一律 transparent(可加 backdrop-filter 模糊,但禁止任何压暗成分)。
+     新增浮层务必遵守,否则脏状态栏会回来。 */
   :root{
     --sat:env(safe-area-inset-top);
     --sab:env(safe-area-inset-bottom);
@@ -120,7 +120,7 @@
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
   /* 浮层 */
-  .sheet-bg{position:fixed; inset:0; background:transparent; backdrop-filter:blur(7px) saturate(0.95); -webkit-backdrop-filter:blur(7px) saturate(0.95); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
+  .sheet-bg{position:fixed; inset:0; background:transparent; z-index:40; opacity:0; pointer-events:none; transition:.2s;}
   .sheet-bg.show{opacity:1; pointer-events:auto;}
   .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(var(--sab) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
   .sheet.show{transform:none;}
@@ -173,10 +173,10 @@
   .auth{position:fixed; inset:0; z-index:200; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:32px;}
   .auth.hide{display:none;}
   .auth-inner{width:100%; max-width:340px; text-align:center;}
-  .auth-brand{display:flex; align-items:baseline; justify-content:center; gap:12px; margin-bottom:8px;}
+  .auth-brand{display:flex; align-items:baseline; justify-content:center; gap:12px; margin-bottom:44px;}
   .auth-brand h1{font-size:30px; font-weight:400; letter-spacing:12px; color:var(--ink); padding-left:12px; margin:0;}
   .auth-en{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint);}
-  .auth-sub{font-size:10px; letter-spacing:5px; color:var(--ink-faint); margin-bottom:44px;}
+  .auth-sub{display:none;}
   .auth-form{display:flex; flex-direction:column; gap:14px;}
   .auth-field{font-family:'Noto Sans SC',sans-serif; font-size:15px; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:11px 2px; text-align:center;}
   .auth-field:focus{outline:none; border-bottom-color:var(--ink);}
@@ -196,7 +196,6 @@
 <div class="auth" id="authView">
   <div class="auth-inner">
     <div class="auth-brand"><h1>问渠</h1><span class="auth-en">Wellspring</span></div>
-    <div class="auth-sub">为 有 源 头 活 水 来</div>
     <div class="auth-form">
       <input class="auth-field" id="authEmail" type="email" placeholder="邮箱" autocomplete="email" />
       <input class="auth-field" id="authPass" type="password" placeholder="密码(至少 6 位)" autocomplete="current-password" />
@@ -354,19 +353,19 @@
   const kInfo=(k)=>KINDS.find(x=>x.k===k)||KINDS[0];
 
   const SEED={
-    concepts:[{id:'c_soc',label:'社会学',x:150,y:150},{id:'c_net',label:'网络',x:250,y:180},{id:'c_topo',label:'拓扑',x:180,y:260}],
+    concepts:[{id:'c_sleep',label:'睡眠',x:150,y:150},{id:'c_habit',label:'习惯',x:250,y:180},{id:'c_focus',label:'专注力',x:180,y:260}],
     threads:[
-      {id:'t1',title:'为什么找工作时,不熟的人反而更有用?',conceptIds:['c_soc','c_net'],createdAt:Date.now()-86400000*10},
-      {id:'t2',title:'咖啡杯和甜甜圈,为什么拓扑上是一样的?',conceptIds:['c_topo','c_net'],createdAt:Date.now()-86400000*4}
+      {id:'t1',title:'为什么熬夜之后,反而更难入睡?',conceptIds:['c_sleep','c_habit'],createdAt:Date.now()-86400000*10},
+      {id:'t2',title:'番茄工作法真的能提升专注力吗?',conceptIds:['c_focus','c_habit'],createdAt:Date.now()-86400000*4}
     ],
     entries:[
-      {id:'e1',threadId:'t1',kind:'ask',body:'直觉上该找关系好的人帮忙,但现实里常常是泛泛之交带来了机会。为什么?',link:'',source:'',createdAt:Date.now()-86400000*10},
-      {id:'e2',threadId:'t1',kind:'source',body:'强连接的圈子信息高度重叠,而弱连接架起不同社群,带来非冗余的新信息。',link:'',source:'Granovetter,《The Strength of Weak Ties》1973',createdAt:Date.now()-86400000*9},
-      {id:'e3',threadId:'t1',kind:'iterate',body:'那是不是所有场景弱连接都更好?似乎不对——需要情感支持、深度信任时,还是强连接靠谱。得分场景。',link:'',source:'',createdAt:Date.now()-86400000*7},
-      {id:'e4',threadId:'t1',kind:'conclude',body:'弱连接的优势在信息广度,强连接的优势在深度与信任。该找谁,取决于你要的是新机会,还是支持。',link:'',source:'',createdAt:Date.now()-86400000*7},
-      {id:'e5',threadId:'t1',kind:'update',body:'两周后与友人谈及,他补充:弱连接亦有代价——信息浅、不牢靠。或许"广度换深度"本身就是取舍。',link:'',source:'',createdAt:Date.now()-86400000*1},
-      {id:'e6',threadId:'t2',kind:'ask',body:'常听说"拓扑学家分不清咖啡杯和甜甜圈",这到底什么意思?',link:'',source:'',createdAt:Date.now()-86400000*4},
-      {id:'e7',threadId:'t2',kind:'conclude',body:'拓扑只关心连接方式,不关心形状大小。两者都只有一个洞,能连续形变成对方,所以拓扑等价。',link:'',source:'',createdAt:Date.now()-86400000*3}
+      {id:'e1',threadId:'t1',kind:'ask',body:'越累应该越好睡才对,但熬夜到凌晨反而躺下睡不着,脑子异常清醒。为什么?',link:'',source:'',createdAt:Date.now()-86400000*10},
+      {id:'e2',threadId:'t1',kind:'source',body:'过度疲劳时身体会分泌皮质醇和肾上腺素维持清醒,这是一种应激反应,反而压制了睡意。',link:'',source:'Matthew Walker,《Why We Sleep》',createdAt:Date.now()-86400000*9},
+      {id:'e3',threadId:'t1',kind:'iterate',body:'那是不是只要避免过度疲劳就行?似乎还不够——错过了自己的"睡眠窗口"也会这样,生物钟比疲劳程度更关键。',link:'',source:'',createdAt:Date.now()-86400000*7},
+      {id:'e4',threadId:'t1',kind:'conclude',body:'难入睡不是因为不够累,而是错过睡眠窗口后,应激激素接管了身体。规律作息比"熬到累"更重要。',link:'',source:'',createdAt:Date.now()-86400000*7},
+      {id:'e5',threadId:'t1',kind:'update',body:'实践两周后发现:固定起床时间比固定睡觉时间更有效——起床时间稳了,睡意自然会在同一时段出现。',link:'',source:'',createdAt:Date.now()-86400000*1},
+      {id:'e6',threadId:'t2',kind:'ask',body:'25分钟工作+5分钟休息,这个节奏为什么被认为有效?还是只是心理安慰?',link:'',source:'',createdAt:Date.now()-86400000*4},
+      {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字,而在于"给自己一个明确的、短到不抗拒的开始",降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3}
     ]
   };
 
