@@ -90,15 +90,16 @@
   .seg.concl .ktag{color:var(--ink);}
   .seg.concl .ktag::before{background:var(--ink); width:24px;}
   .seg .sbody{font-size:15px; line-height:1.75; color:var(--ink); font-weight:300; letter-spacing:.1px; white-space:pre-wrap; word-break:break-word;}
-  .seg.concl .sbody{font-weight:400; padding-left:16px; border-left:1.5px solid var(--ink);}
+  .seg.concl .sbody{font-weight:400;}
   .seg .source{margin-top:12px; font-size:12px; color:var(--ink-soft); letter-spacing:.2px; padding-left:16px; position:relative;}
   .seg .source::before{content:''; position:absolute; left:0; top:9px; width:8px; height:0.5px; background:var(--ink-faint);}
   .seg .source a{color:inherit;}
   .seg .when{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1px; color:var(--ink-faint); margin-top:12px; display:flex; gap:14px; align-items:center;}
   .seg .sedited{color:var(--ink-faint); opacity:.7; font-style:normal;}
-  .update-sep{display:flex; align-items:center; gap:12px; margin:14px 0 26px; padding-top:22px; border-top:0.5px solid var(--line);}
-  .update-sep span{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap;}
-  .update-sep::after{content:''; flex:1; height:0; }
+  .update-head{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); margin:22px 0 14px; padding-top:22px; border-top:0.5px solid var(--line);}
+  .update-head .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:1.5px;}
+  .update-body{border-left:2px solid var(--line-strong,var(--line)); border-left-color:var(--line); padding-left:18px; margin-left:2px;}
+  .update-body .seg:last-child{padding-bottom:6px;}
   .seg .sdel{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px;}
   .seg .sedit{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft);}
   .kpick{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 4px 25px;}
@@ -304,7 +305,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.6.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.6.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -477,7 +478,7 @@
     const main=mainEntries(t.id).map(renderSeg).join('');
     const ups=updateEntries(t.id);
     let upBlock='';
-    if(ups.length){ upBlock='<div class="update-sep"><span>后续更新 · Updates</span></div>'+ups.map(renderSeg).join(''); }
+    if(ups.length){ upBlock='<div class="update-head"><span class="cn">后续更新</span> · Updates</div><div class="update-body">'+ups.map(renderSeg).join('')+'</div>'; }
     $('#detailView').innerHTML=
       '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle" contenteditable="true" spellcheck="false">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
