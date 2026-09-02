@@ -95,6 +95,10 @@
   .seg .source::before{content:''; position:absolute; left:0; top:9px; width:8px; height:0.5px; background:var(--ink-faint);}
   .seg .source a{color:inherit;}
   .seg .when{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1px; color:var(--ink-faint); margin-top:12px; display:flex; gap:14px; align-items:center;}
+  .seg .sedited{color:var(--ink-faint); opacity:.7; font-style:normal;}
+  .update-sep{display:flex; align-items:center; gap:12px; margin:14px 0 26px; padding-top:22px; border-top:0.5px solid var(--line);}
+  .update-sep span{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap;}
+  .update-sep::after{content:''; flex:1; height:0; }
   .seg .sdel{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px;}
   .seg .sedit{cursor:pointer; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft);}
   .kpick{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 4px 25px;}
@@ -300,7 +304,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.5.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.6.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -331,7 +335,7 @@
       return {
         concepts:(c.data||[]).map(r=>({id:r.id,label:r.label,x:r.x,y:r.y})),
         threads:(t.data||[]).map(r=>({id:r.id,title:r.title,conceptIds:tcMap[r.id]||[],createdAt:new Date(r.created_at).getTime()})),
-        entries:(e.data||[]).map(r=>({id:r.id,threadId:r.thread_id,kind:r.kind,body:r.body,source:r.source||'',link:r.link||'',createdAt:new Date(r.created_at).getTime()}))
+        entries:(e.data||[]).map(r=>({id:r.id,threadId:r.thread_id,kind:r.kind,body:r.body,source:r.source||'',link:r.link||'',createdAt:new Date(r.created_at).getTime(),occurredAt:r.occurred_at?new Date(r.occurred_at).getTime():new Date(r.created_at).getTime(),updatedAt:r.updated_at?new Date(r.updated_at).getTime():null}))
       };
     }catch(err){ return null; }
   }
@@ -352,7 +356,7 @@
       const {error}=await sb.rpc('replace_all_data',{
         p_concepts: state.concepts.map(c=>({id:c.id,label:c.label,x:c.x,y:c.y})),
         p_threads: state.threads.map(t=>({id:t.id,title:t.title,createdAt:t.createdAt})),
-        p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt})),
+        p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt,occurredAt:e.occurredAt||e.createdAt,updatedAt:e.updatedAt||null})),
         p_thread_concepts: tc
       });
       if(error){ console.error('云同步失败:',error.message); syncFailed=true; }
@@ -398,7 +402,12 @@
   const $=(s)=>document.querySelector(s);
   const concept=(id)=>state.concepts.find(c=>c.id===id);
   const thread=(id)=>state.threads.find(t=>t.id===id);
-  const entriesOf=(tid)=>state.entries.filter(e=>e.threadId===tid).sort((a,b)=>a.createdAt-b.createdAt);
+  // 时间访问器(兼容老数据):occurredAt 缺省回落到 createdAt
+  const occAt=(e)=>e.occurredAt||e.createdAt;
+  // 主时间线只含非 update 片段,按发生时间排;update 单独成区
+  const entriesOf=(tid)=>state.entries.filter(e=>e.threadId===tid).sort((a,b)=>occAt(a)-occAt(b));
+  const mainEntries=(tid)=>entriesOf(tid).filter(e=>e.kind!=='update');
+  const updateEntries=(tid)=>entriesOf(tid).filter(e=>e.kind==='update').sort((a,b)=>occAt(a)-occAt(b));
   const esc=(s)=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
   // 链接协议白名单:只允许 http(s),挡住 javascript:/data: 等 XSS 入口
   const safeUrl=(u)=>{ u=(u||'').trim(); return /^https?:\/\//i.test(u)?u:''; };
@@ -451,20 +460,28 @@
   function renderDetail(){
     const t=thread(currentThread); if(!t){ switchView('list'); return; }
     let concepts=t.conceptIds.map(id=>{const c=concept(id); return c?'<span class="cc"><span class="cn">'+esc(c.label)+'</span><span class="x" data-cid="'+id+'">✕</span></span>':'';}).join('');
-    let segs='';
-    entriesOf(t.id).forEach(e=>{ const ki=kInfo(e.kind); const concl=e.kind==='conclude'?' concl':'';
-      segs+='<div class="seg'+concl+'">';
-      segs+='<div class="ktag" data-eid="'+e.id+'"><span class="kcn">'+ki.cn+'</span> '+ki.en+'</div>';
-      if(editingKind===e.id){ segs+='<div class="kpick">'; KINDS.forEach(k=>{ segs+='<button data-eid="'+e.id+'" data-k="'+k.k+'"><span class="kcn">'+k.cn+'</span></button>'; }); segs+='</div>'; }
-      segs+='<div class="sbody">'+esc(e.body)+'</div>';
-      if(e.kind==='source' && (e.source||e.link)){ segs+='<div class="source">'; const su=safeUrl(e.link); if(su){ segs+='<a href="'+esc(su)+'" target="_blank" rel="noopener noreferrer">'+esc(e.source||su)+'</a>'; } else { segs+=esc(e.source||e.link); } segs+='</div>'; }
-      segs+='<div class="when">'+fmtEn(e.createdAt)+'<span class="sedit" data-edit="'+e.id+'">edit</span><span class="sdel" data-del="'+e.id+'">delete</span></div>';
-      segs+='</div>';
-    });
+    // 渲染单条片段
+    const renderSeg=(e)=>{ const ki=kInfo(e.kind); const concl=e.kind==='conclude'?' concl':''; let s='';
+      s+='<div class="seg'+concl+'">';
+      s+='<div class="ktag" data-eid="'+e.id+'"><span class="kcn">'+ki.cn+'</span> '+ki.en+'</div>';
+      if(editingKind===e.id){ s+='<div class="kpick">'; KINDS.forEach(k=>{ s+='<button data-eid="'+e.id+'" data-k="'+k.k+'"><span class="kcn">'+k.cn+'</span></button>'; }); s+='</div>'; }
+      s+='<div class="sbody">'+esc(e.body)+'</div>';
+      if(e.kind==='source' && (e.source||e.link)){ s+='<div class="source">'; const su=safeUrl(e.link); if(su){ s+='<a href="'+esc(su)+'" target="_blank" rel="noopener noreferrer">'+esc(e.source||su)+'</a>'; } else { s+=esc(e.source||e.link); } s+='</div>'; }
+      // 显示"发生时间";若曾编辑过,附注编辑时间(诚实呈现两个时间)
+      let when=fmtEn(occAt(e));
+      if(e.updatedAt && e.updatedAt>e.createdAt+60000){ when+=' <span class="sedited">编辑于 '+fmtEn(e.updatedAt)+'</span>'; }
+      s+='<div class="when">'+when+'<span class="sedit" data-edit="'+e.id+'">edit</span><span class="sdel" data-del="'+e.id+'">delete</span></div>';
+      s+='</div>';
+      return s;
+    };
+    const main=mainEntries(t.id).map(renderSeg).join('');
+    const ups=updateEntries(t.id);
+    let upBlock='';
+    if(ups.length){ upBlock='<div class="update-sep"><span>后续更新 · Updates</span></div>'+ups.map(renderSeg).join(''); }
     $('#detailView').innerHTML=
       '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle" contenteditable="true" spellcheck="false">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
-      '<div class="timeline">'+segs+'</div>'+
+      '<div class="timeline">'+main+upBlock+'</div>'+
       '<div class="addseg" id="dAddSeg">＋ Add Entry · 续一段</div><div style="height:100px"></div>';
     $('#dBack').addEventListener('click',()=>switchView('list'));
     const dt=$('#dTitle');
@@ -479,7 +496,10 @@
     document.querySelectorAll('#detailView .sedit').forEach(d=>d.addEventListener('click',()=>openSeg(d.getAttribute('data-edit'))));
     document.querySelectorAll('#detailView .sdel').forEach(d=>d.addEventListener('click',()=>{ if(confirm('删除这一段?')) delEntry(d.getAttribute('data-del')); }));
   }
-  function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ const wasUpdate=e.kind==='update'; e.kind=k; if(k==='update' && !wasUpdate){ e.createdAt=Date.now(); } editingKind=null; save(); renderDetail(); } }
+  function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ const wasUpdate=e.kind==='update'; e.kind=k; e.updatedAt=Date.now();
+    // 变成"更新"类型:不动 createdAt(记录时间保持诚实),而是设 occurredAt=今天(想法发生时间),让它排到时间线该在的位置
+    if(k==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
+    editingKind=null; save(); renderDetail(); } }
   function delEntry(eid){ state.entries=state.entries.filter(x=>x.id!==eid); save(); renderDetail(); }
   function detachConcept(cid){ const t=thread(currentThread); t.conceptIds=t.conceptIds.filter(x=>x!==cid); save(); renderDetail(); }
 
@@ -511,7 +531,9 @@
   $('#sBody').addEventListener('input',()=>$('#sBody').classList.remove('err'));
   $('#sSave').addEventListener('click',()=>{ const body=$('#sBody').value.trim(); if(!body){ $('#sBody').classList.add('err'); $('#sBody').focus(); return; }
     const link=segKind==='source'?$('#sLink').value.trim():''; const source=segKind==='source'?$('#sSource').value.trim():'';
-    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; if(segKind==='update' && !wasUpdate){ e.createdAt=Date.now(); } save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.updatedAt=Date.now();
+      if(segKind==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
+      save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
     else { state.entries.push({id:'e_'+Date.now(),threadId:currentThread,kind:segKind,body,link,source,createdAt:Date.now()}); save(); hideSheets(); renderDetail(); toast('已续一段'); }
   });
 
