@@ -120,13 +120,13 @@
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
   /* 浮层 */
-  .sheet-bg{position:fixed; inset:0; background:transparent; z-index:40; opacity:0; pointer-events:none; transition:.2s;}
+  .sheet-bg{position:fixed; inset:0; background:transparent; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
   .sheet-bg.show{opacity:1; pointer-events:auto;}
   .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(var(--sab) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
   .sheet.show{transform:none;}
   .sheet .sh-title{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:20px;}
   .sheet label{display:block; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); margin:0 0 8px;}
-  .field{width:100%; font-family:inherit; font-size:15px; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:8px 0; margin-bottom:22px; resize:none; letter-spacing:.2px;}
+  .field{width:100%; font-family:inherit; font-size:16px; zoom:0.94; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:8px 0; margin-bottom:22px; resize:none; letter-spacing:.2px;}
   .field::placeholder{color:var(--ink-faint);}
   .field:focus{outline:none; border-bottom-color:var(--ink);}
   textarea.field{min-height:80px; line-height:1.6;}
@@ -160,13 +160,15 @@
   .panel .p-head{display:flex; align-items:center; gap:14px; margin-bottom:28px;}
   .panel .p-head button{background:none;border:none;color:var(--ink);font-size:18px;cursor:pointer;padding:0; font-family:'Inter',sans-serif;}
   .panel h2{font-family:'Inter',sans-serif; font-weight:400; font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:0; color:var(--ink-faint);}
-  .p-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 0; border-bottom:0.5px solid var(--line-soft);}
+  .p-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 0; border-bottom:0.5px solid var(--line-soft);}
+  .p-row>div:first-child{min-width:0; flex:1;}
   .p-row .l{font-size:14px; letter-spacing:.3px;}
   .p-row .d{font-size:11px; color:var(--ink-faint); margin-top:3px; letter-spacing:.2px;}
-  .p-row button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; padding:8px 14px; cursor:pointer; border:0.5px solid var(--line); background:none; color:var(--ink);}
+  .p-row button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-indent:1.5px; text-transform:uppercase; padding:8px 15px; cursor:pointer; border:0.5px solid var(--line); background:none; color:var(--ink); white-space:nowrap; flex:0 0 auto;}
   .p-row button.warn{color:#C0563A; border-color:rgba(192,86,58,.4);}
-  .p-note{font-size:12px; color:var(--ink-faint); line-height:1.9; margin-top:24px; letter-spacing:.3px;}
+  .p-note{font-size:12px; color:var(--ink-faint); line-height:1.9; margin-top:40px; letter-spacing:.3px;}
   .p-note b{color:var(--ink-soft); font-weight:400;}
+  .p-ver{font-family:'Inter',sans-serif; letter-spacing:2px; text-transform:uppercase; font-size:10px; color:var(--ink-faint);}
 
 
   /* 登录界面 */
@@ -178,7 +180,7 @@
   .auth-en{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint);}
   .auth-sub{display:none;}
   .auth-form{display:flex; flex-direction:column; gap:14px;}
-  .auth-field{font-family:'Noto Sans SC',sans-serif; font-size:15px; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:11px 2px; text-align:center;}
+  .auth-field{font-family:'Noto Sans SC',sans-serif; font-size:16px; zoom:0.94; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:11px 2px; text-align:center;}
   .auth-field:focus{outline:none; border-bottom-color:var(--ink);}
   .auth-err{font-size:12px; color:#C0563A; min-height:16px; letter-spacing:.3px;}
   .auth-btn{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; padding:15px; cursor:pointer; border:none; background:var(--ink); color:var(--paper);}
@@ -281,7 +283,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 2.0.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.1.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -317,8 +319,12 @@
     }catch(err){ return null; }
   }
 
-  async function cloudPush(){
+  let cloudReady=false;  // 写入守卫:只有云端状态已确认(拉取过或确认为空),才允许推送覆盖
+  async function cloudPush(force){
     if(!sb||!session||syncing) return;
+    // 守卫:云端尚未就绪时,禁止用当前 state 覆盖云端(防止空数据抹掉云端真实数据)
+    // force=true 仅用于"清空"等明确的用户操作
+    if(!cloudReady && !force){ return; }
     syncing=true;
     try{
       const uid=session.user.id;
@@ -553,7 +559,7 @@
   $('#exportBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const d=new Date(); a.href=url; a.download='wenqu-backup-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.json'; a.click(); URL.revokeObjectURL(url); toast('已导出'); });
   $('#importBtn').addEventListener('click',()=>$('#importFile').click());
   $('#importFile').addEventListener('change',(e)=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!d.threads||!d.entries){ toast('格式不对'); return; } state=d; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已恢复'); }catch(err){ toast('读取失败'); } }; rd.readAsText(f); e.target.value=''; });
-  $('#clearBtn').addEventListener('click',()=>{ if(confirm('确定清空全部?建议先导出备份。')){ state={concepts:[],threads:[],entries:[]}; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已清空'); } });
+  $('#clearBtn').addEventListener('click',async()=>{ if(confirm('确定清空全部?云端数据也会一并清空,建议先导出备份。')){ state={concepts:[],threads:[],entries:[]}; save0(); if(sb&&session){ toast('清空中…'); cloudReady=true; await cloudPush(true); } switchView('list'); $('#panel').classList.remove('show'); toast('已清空'); } });
 
   let toastTimer=null;
   function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600); }
@@ -586,21 +592,24 @@
   }
   async function afterFirstSignup(){
     hideAuth(); toast('账号已创建');
-    if(state.threads.length){ await cloudPush(); }
+    cloudReady=true;  // 新账号,云端确定为空,可安全推送
+    if(state.threads.length){ await cloudPush(true); }
     switchView('list');
   }
   async function afterLogin(){
     hideAuth(); toast('已登录,正在同步…');
     const cloud=await cloudPull();
-    if(cloud && (cloud.threads.length||cloud.concepts.length)){ state=cloud; save0(); }
-    else if(state.threads.length){ await cloudPush(); }
+    if(cloud===null){ toast('同步失败,请检查网络'); switchView('list'); return; }  // 拉取失败,不标记就绪,禁止覆盖云端
+    cloudReady=true;  // 云端状态已确认
+    if(cloud.threads.length||cloud.concepts.length){ state=cloud; save0(); }
+    else if(state.threads.length){ await cloudPush(true); }  // 云端空,本地有,首次上传
     switchView('list'); toast('已同步');
   }
   function save0(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 
   async function doLogout(){
     if(sb&&session){ await sb.auth.signOut(); }
-    session=null; $('#panel').classList.remove('show'); showAuth();
+    session=null; cloudReady=false; $('#panel').classList.remove('show'); showAuth();
     $('#authEmail').value=''; $('#authPass').value=''; authErr('');
   }
 
@@ -623,8 +632,12 @@
       if(data && data.session){
         session=data.session; hideAuth();
         const cloud=await cloudPull();
-        if(cloud && (cloud.threads.length||cloud.concepts.length)){ state=cloud; save0(); switchView('list'); }
-        else if(state.threads.length){ await cloudPush(); }
+        if(cloud!==null){
+          cloudReady=true;
+          if(cloud.threads.length||cloud.concepts.length){ state=cloud; save0(); switchView('list'); }
+          else if(state.threads.length){ await cloudPush(true); }
+        }
+        // cloudPull 失败(null)时不标记就绪:本地照常用,但不会覆盖云端
       } else { showAuth(); }
     } else { showAuth(); authErr('云同步暂不可用,可先本地使用'); }
   })();
