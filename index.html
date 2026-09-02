@@ -162,9 +162,9 @@
   .select-foot #delSelected:disabled{color:var(--ink-faint); cursor:default;}
   .select-foot #cancelSelect{color:var(--ink-soft);}
   .tab-shape{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0;}
-  .vtab{position:relative; z-index:1; background:none; border:none; padding:0; font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; display:flex; align-items:center; justify-content:center; transition:flex .32s cubic-bezier(.4,0,.2,1), color .2s;}
+  .vtab{position:relative; z-index:1; background:none; border:none; padding:0; font-family:'Noto Sans SC','Inter',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; display:flex; align-items:center; justify-content:center; transition:flex .32s cubic-bezier(.4,0,.2,1), color .2s;}
   .vtab.on{flex:1; color:var(--ink);}
-  .vtab:not(.on){flex:0 0 auto; padding:0 16px; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:1px; text-transform:none;}
+  .vtab:not(.on){flex:0 0 auto; padding:0 16px; font-size:11px; letter-spacing:1px; text-transform:none; color:var(--ink-faint);}
   .vtab:not(.on) .en-part{display:none;}
 
   /* 浮层 */
@@ -366,7 +366,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记,可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.13.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.13.2</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -526,13 +526,20 @@
     }
     document.querySelector('#tabPath').setAttribute('d', d);
   }
+  let tabAnimId=null;
   function updateTabLabels(){
     document.querySelectorAll('.vtab').forEach(t=>{
       const v=t.dataset.view; const on=t.classList.contains('on');
       t.textContent = on ? TAB_LABELS[v].full : TAB_LABELS[v].cn;
     });
-    // 布局稳定后再画形状
-    requestAnimationFrame(()=>requestAnimationFrame(renderTabShape));
+    // flex 有 0.32s 过渡动画,形状在这段时间内每帧重画,跟着标签一起平滑变化
+    if(tabAnimId) cancelAnimationFrame(tabAnimId);
+    const start=performance.now(); const dur=360;
+    (function step(now){
+      renderTabShape();
+      if(now-start<dur){ tabAnimId=requestAnimationFrame(step); }
+      else { tabAnimId=null; renderTabShape(); }
+    })(start);
   }
   document.querySelectorAll('.vtab').forEach(t=>{ t.addEventListener('click',()=>{
     document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
