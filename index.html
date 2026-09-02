@@ -107,6 +107,10 @@
   .kpick button .kcn{font-family:'Noto Sans SC',sans-serif;}
 
   .detail-foot{display:flex; flex-direction:column; gap:10px; margin:8px 28px 0;}
+  .round-add{margin:2px 0 8px;}
+  .addseg.mini{width:auto; padding:7px 0; border:none; background:none; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:.5px; color:var(--ink-faint); cursor:pointer; text-align:left;}
+  .addseg.mini:hover{color:var(--ink-soft);}
+  .update-body .round-add{margin-left:0;}
   .addseg{flex:1; text-align:center; padding:15px; border:0.5px solid var(--line); font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:1px; color:var(--ink-soft); cursor:pointer; transition:.15s; background:none;}
 
   .addseg:hover{background:var(--ink); color:var(--paper); border-color:var(--ink);}
@@ -333,7 +337,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.2</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -424,7 +428,10 @@
       {id:'e5b',threadId:'t1',round:2,kind:'source',body:'查到:光照是生物钟最强的校准信号,而起床后见光的时间最稳定、最可控。所以起床时间比睡觉时间更适合当锚点。',link:'',source:'Huberman Lab · 晨间光照与昼夜节律',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
       {id:'e5c',threadId:'t1',round:2,kind:'conclude',body:'修正第一轮的结论:与其纠结几点睡,不如固定起床时间+起床后尽快见光。锚住起点,睡意会自己回到该来的时段。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
       {id:'e6',threadId:'t2',kind:'ask',body:'25分钟工作+5分钟休息,这个节奏为什么被认为有效?还是只是心理安慰?',link:'',source:'',createdAt:Date.now()-86400000*4},
-      {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字,而在于"给自己一个明确的、短到不抗拒的开始",降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3}
+      {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字,而在于"给自己一个明确的、短到不抗拒的开始",降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3},
+      {id:'e8',threadId:'t2',round:2,kind:'ask',body:'用了一个月,发现有时25分钟到了正进入状态,被迫休息反而打断心流。那固定时长是不是有问题?',link:'',source:'',createdAt:Date.now()-86400000*2,occurredAt:Date.now()-86400000*2},
+      {id:'e9',threadId:'t2',round:2,kind:'iterate',body:'试了"到点了但状态好就继续"的弹性做法,效果更好。番茄钟的价值在"启动",不在"严格计时"。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e10',threadId:'t2',round:2,kind:'conclude',body:'把番茄钟当"起步器"而非"节拍器":用它跨过启动门槛,一旦进入心流就让它自然延续,别被闹钟打断。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1}
     ]
   };
 
@@ -531,16 +538,18 @@
     let body='';
     groups.forEach((g,gi)=>{
       const segsHtml=g.items.map(renderSeg).join('');
+      // 每个区末尾:该区自己的"续一段"(指向本区 round),点它往这个区加
+      const addInRound='<button class="addseg mini" data-addround="'+g.round+'">＋ 续一段</button>';
       if(gi===0){
         // 第一轮:主线程,直接铺开
-        body+=segsHtml;
+        body+=segsHtml+'<div class="round-add">'+addInRound+'</div>';
       } else {
-        // 后续轮:新想法区间,竖线缩进
-        body+='<div class="update-head"><span class="cn">新想法</span> · More '+g.round+'</div><div class="update-body">'+segsHtml+'</div>';
+        // 后续轮:新想法区间,竖线缩进,续一段也在缩进区内
+        body+='<div class="update-head"><span class="cn">新想法</span> · More '+g.round+'</div><div class="update-body">'+segsHtml+'<div class="round-add">'+addInRound+'</div></div>';
       }
     });
-    // 底部两个入口:续一段(当前最新轮) + 新想法(开启新一轮)
-    const foot='<div class="detail-foot"><button class="addseg" id="dAddSeg">＋ 续一段</button><button class="addseg alt" id="dNewRound">＋ 新想法</button></div><div style="height:100px"></div>';
+    // 底部只留"新想法"(开启新一轮)
+    const foot='<div class="detail-foot"><button class="addseg alt" id="dNewRound">＋ 新想法</button></div><div style="height:100px"></div>';
     $('#detailView').innerHTML=
       '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle" contenteditable="true" spellcheck="false">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
@@ -550,7 +559,9 @@
     dt.addEventListener('blur',()=>{ const nv=dt.textContent.trim(); const t2=thread(currentThread); if(nv && nv!==t2.title){ t2.title=nv; save(); } else if(!nv){ dt.textContent=t2.title; } });
     dt.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); dt.blur(); } else if(e.key==='Escape'){ dt.textContent=thread(currentThread).title; dt.blur(); } });
     document.addEventListener('pointerdown', function outclick(ev){ const d=document.querySelector('#dTitle'); if(!d){ document.removeEventListener('pointerdown',outclick); return; } if(document.activeElement===d && ev.target!==d){ d.blur(); } }, true);
-    $('#dAddSeg').addEventListener('click',()=>{ pendingRound=null; openSeg(); });
+    // 各区的"续一段":往指定 round 加
+    document.querySelectorAll('#detailView [data-addround]').forEach(b=>b.addEventListener('click',()=>{ pendingRound=parseInt(b.getAttribute('data-addround'),10); openSeg(); }));
+    // "新想法":开启新一轮
     $('#dNewRound').addEventListener('click',()=>{ pendingRound=maxRound(currentThread)+1; openSeg(); });
     $('#dAddConcept').addEventListener('click',openConceptSheet);
     document.querySelectorAll('#detailView .cc .x').forEach(x=>x.addEventListener('click',()=>detachConcept(x.getAttribute('data-cid'))));
