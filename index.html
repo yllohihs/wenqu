@@ -109,6 +109,12 @@
   #galaxy{display:block; width:100%; height:58vh; max-height:480px;}
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
+  .glx-analyze{text-align:center; margin:32px 28px 0;}
+  .glx-analyze button{font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:2px; color:var(--paper); background:var(--ink); border:none; padding:13px 28px; cursor:pointer;}
+  .glx-analyze button:disabled{opacity:.5; cursor:default;}
+  .glx-analyze-note{font-size:11px; color:var(--ink-faint); margin-top:10px; letter-spacing:.3px; line-height:1.6;}
+  .analyze-body{font-size:14px; line-height:1.8; color:var(--ink); white-space:pre-wrap; word-break:break-word; max-height:60vh; overflow-y:auto; letter-spacing:.2px; margin-bottom:8px;}
+  .analyze-body .loading{color:var(--ink-faint); text-align:center; padding:30px 0;}
 
   .fabwrap{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; z-index:30;}
   .fab{width:100%; height:calc(50px + var(--sab) * 0.5); background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; padding:0; margin:0;}
@@ -120,7 +126,8 @@
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
   /* 浮层 */
-  .sheet-bg{position:fixed; inset:0; background:transparent; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
+  .sheet-bg{position:fixed; top:var(--sat); left:0; right:0; bottom:0; background:rgba(20,20,18,.28); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
+  /* ↑ 遮罩从状态栏下方(top:--sat)开始,顶部状态栏区域不被压暗覆盖,故 iOS 采样不到暗色,不会染灰。压暗+模糊都在安全区内。 */
   .sheet-bg.show{opacity:1; pointer-events:auto;}
   .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(var(--sab) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
   .sheet.show{transform:none;}
@@ -164,7 +171,7 @@
   .p-row>div:first-child{min-width:0; flex:1;}
   .p-row .l{font-size:14px; letter-spacing:.3px;}
   .p-row .d{font-size:11px; color:var(--ink-faint); margin-top:3px; letter-spacing:.2px;}
-  .p-row button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-indent:1.5px; text-transform:uppercase; padding:8px 15px; cursor:pointer; border:0.5px solid var(--line); background:none; color:var(--ink); white-space:nowrap; flex:0 0 auto;}
+  .p-row button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-indent:1.5px; text-transform:uppercase; padding:9px 16px; cursor:pointer; border:1px solid var(--line); background:none; color:var(--ink); white-space:nowrap; flex:0 0 auto;}
   .p-row button.warn{color:#C0563A; border-color:rgba(192,86,58,.4);}
   .p-note{font-size:12px; color:var(--ink-faint); line-height:1.9; margin-top:40px; letter-spacing:.3px;}
   .p-note b{color:var(--ink-soft); font-weight:400;}
@@ -186,7 +193,9 @@
   .auth-btn{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; padding:15px; cursor:pointer; border:none; background:var(--ink); color:var(--paper);}
   .auth-btn.ghost{background:none; color:var(--ink-soft); border:0.5px solid var(--line);}
   .auth-btn:active{opacity:.85;}
-  .auth-skip{margin-top:32px; font-size:12px; color:var(--ink-faint); cursor:pointer; letter-spacing:.3px;}
+  .auth-forgot{margin-top:20px; font-size:12px; color:var(--ink-soft); cursor:pointer; letter-spacing:.3px;}
+  .auth-forgot:active{opacity:.7;}
+  .auth-skip{margin-top:20px; font-size:12px; color:var(--ink-faint); cursor:pointer; letter-spacing:.3px;}
   .auth-skip:active{color:var(--ink-soft);}
   /* 设置页账号区 */
   .acct-email{font-size:13px; color:var(--ink-soft); letter-spacing:.3px;}
@@ -205,6 +214,7 @@
       <button class="auth-btn" id="authSignin">登录</button>
       <button class="auth-btn ghost" id="authSignup">注册新账号</button>
     </div>
+    <div class="auth-forgot" id="authForgot">忘记密码?</div>
     <div class="auth-skip" id="authSkip">先不登录,仅在本机使用 →</div>
   </div>
 </div>
@@ -232,6 +242,7 @@
     <div id="galaxyView" style="display:none;">
       <div id="galaxyWrap"><svg id="galaxy" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
       <div class="glxhint" id="glxhint">拖动节点换位置,点一下看这个概念下有哪些线索</div>
+      <div class="glx-analyze"><button id="analyzeBtn">✦ AI 脉络分析</button><div class="glx-analyze-note">让 AI 读一遍你的线索,发现内容里的隐藏关联、建议概念</div></div>
     </div>
   </main>
 </div>
@@ -277,13 +288,20 @@
   <div class="sheet-foot"><button class="btn primary" id="attachDone">Done</button></div>
 </div>
 
+<div class="sheet" id="analyzeSheet">
+  <div class="sh-title">AI 脉络分析</div>
+  <div class="analyze-body" id="analyzeBody"></div>
+  <div class="sheet-foot"><button class="btn primary" id="analyzeDone">好</button></div>
+</div>
+
 <div class="panel" id="panel">
   <div class="p-head"><button id="panelBack">← Back</button><h2>Settings · 设置</h2></div>
   <div class="p-row"><div><div class="l" id="acctLabel">未登录</div><div class="d" id="acctDesc">登录后数据云端同步,换设备不丢</div></div><button id="acctBtn">登录</button></div>
+  <div class="p-row" id="pwRow" style="display:none;"><div><div class="l">修改密码</div><div class="d">改一个新的登录密码</div></div><button id="pwBtn">修改</button></div>
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.1.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.3.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -515,6 +533,33 @@
   $('#attachNew').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); const v=e.target.value.trim(); if(!v)return; const id=newConcept(v); thread(currentThread).conceptIds.push(id); e.target.value=''; save(); renderAttachChips(); } });
   $('#attachDone').addEventListener('click',()=>{ hideSheets(); renderDetail(); });
 
+  // ===== AI 脉络分析 =====
+  async function runAnalyze(){
+    if(!sb||!session){ toast('请先登录再用 AI 分析'); return; }
+    if(!state.threads.length){ toast('还没有线索可分析'); return; }
+    const btn=$('#analyzeBtn'); btn.disabled=true; btn.textContent='分析中…';
+    $('#analyzeBody').innerHTML='<div class="loading">AI 正在读你的线索,请稍候…<br>(约 10-20 秒)</div>';
+    showSheet('#analyzeSheet');
+    try{
+      // 精简线索数据:标题 + 概念 + 各片段正文
+      const payload=state.threads.map(t=>({
+        title:t.title,
+        concepts:(t.conceptIds||[]).map(id=>{const c=concept(id);return c?c.label:'';}).filter(Boolean),
+        entries:entriesOf(t.id).map(e=>({type:kInfo(e.kind).cn, text:e.body}))
+      }));
+      const {data:{session:fresh}}=await sb.auth.getSession();
+      const res=await fetch(SB_URL+'/functions/v1/analyze',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+(fresh?fresh.access_token:session.access_token),'apikey':SB_KEY},
+        body:JSON.stringify({threads:payload})
+      });
+      const data=await res.json();
+      if(!res.ok){ $('#analyzeBody').innerHTML='<div class="loading">'+esc(data.error||'分析失败')+'</div>'; }
+      else { $('#analyzeBody').textContent=data.suggestion; }
+    }catch(err){ $('#analyzeBody').innerHTML='<div class="loading">出错了:'+esc(String(err))+'</div>'; }
+    btn.disabled=false; btn.textContent='✦ AI 脉络分析';
+  }
+
   const svg=$('#galaxy'); let raf=null, selected=null, dragId=null, alpha=0; const vel={};
   function computeLinks(){ const set=new Set(),links=[]; state.threads.forEach(t=>{const cs=t.conceptIds; for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const key=[cs[i],cs[j]].sort().join('|'); if(!set.has(key)){set.add(key);links.push([cs[i],cs[j]]);}}}); return links; }
   function threadCount(cid){ return state.threads.filter(t=>t.conceptIds.includes(cid)).length; }
@@ -551,9 +596,21 @@
     else { hint.textContent='拖动节点换位置,点一下看这个概念下有哪些线索'; } renderGalaxy(); }
 
   function refreshAcct(){ const l=$('#acctLabel'),d=$('#acctDesc'),b=$('#acctBtn');
+    $('#pwRow').style.display = session ? 'flex' : 'none';
     if(session){ l.textContent=session.user.email; l.classList.add('acct-email'); d.textContent='已云端同步'; b.textContent='登出'; }
     else { l.textContent='未登录'; l.classList.remove('acct-email'); d.textContent='登录后数据云端同步,换设备不丢'; b.textContent='登录'; } }
+  $('#analyzeBtn').addEventListener('click',runAnalyze);
+  $('#analyzeDone').addEventListener('click',hideSheets);
   $('#gearBtn').addEventListener('click',()=>{ refreshAcct(); $('#panel').classList.add('show'); });
+  $('#pwBtn').addEventListener('click',async()=>{
+    if(!sb||!session){ return; }
+    const np=prompt('输入新密码(至少 6 位)');
+    if(np===null) return;
+    if(np.trim().length<6){ toast('密码至少 6 位'); return; }
+    toast('修改中…');
+    const {error}=await sb.auth.updateUser({password:np.trim()});
+    if(error){ toast('修改失败:'+error.message); } else { toast('密码已修改'); }
+  });
   $('#acctBtn').addEventListener('click',()=>{ if(session){ if(confirm('登出?本机数据保留,云端数据不受影响。')) doLogout(); } else { $('#panel').classList.remove('show'); showAuth(); } });
   $('#panelBack').addEventListener('click',()=>$('#panel').classList.remove('show'));
   $('#exportBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const d=new Date(); a.href=url; a.download='wenqu-backup-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.json'; a.click(); URL.revokeObjectURL(url); toast('已导出'); });
@@ -615,6 +672,15 @@
 
   $('#authSignin').addEventListener('click',doSignin);
   $('#authSignup').addEventListener('click',doSignup);
+  $('#authForgot').addEventListener('click',async()=>{
+    if(!sb){ authErr('网络未就绪'); return; }
+    const email=$('#authEmail').value.trim();
+    if(!email){ authErr('先在上面填邮箱,再点忘记密码'); $('#authEmail').focus(); return; }
+    authErr('发送中…');
+    const {error}=await sb.auth.resetPasswordForEmail(email);
+    if(error){ authErr(error.message); return; }
+    authErr('重置邮件已发到 '+email+',查收后按链接改密码');
+  });
   $('#authSkip').addEventListener('click',()=>{ hideAuth(); switchView('list'); });
   $('#authPass').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSignin(); });
 
