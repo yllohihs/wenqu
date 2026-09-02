@@ -143,6 +143,19 @@
 
   /* 顶部视图切换 */
   .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
+  .list-bar{display:flex; justify-content:flex-end; padding:10px 28px 4px;}
+  .list-bar button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); background:none; border:none; cursor:pointer;}
+  .list-bar button:hover{color:var(--ink-soft);}
+  .thread.selectable{padding-left:52px; position:relative;}
+  .thread .tcheck{position:absolute; left:24px; top:50%; transform:translateY(-50%); width:20px; height:20px; border:1.5px solid var(--line-strong,var(--line)); border-color:rgba(22,21,19,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--paper);}
+  .thread.selected .tcheck{background:var(--ink); border-color:var(--ink);}
+  .thread.selected{background:var(--raise);}
+  .select-foot{display:none; position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--paper); border-top:0.5px solid var(--line); padding:16px 28px calc(var(--sab) + 16px); align-items:center; gap:16px; z-index:35;}
+  .select-foot #selCount{font-size:13px; color:var(--ink-soft); flex:1;}
+  .select-foot button{font-family:'Noto Sans SC',sans-serif; font-size:14px; padding:8px 18px; cursor:pointer; border:none;}
+  .select-foot #delSelected{background:#C0392B; color:#fff;}
+  .select-foot #delSelected:disabled{opacity:.4; cursor:default;}
+  .select-foot #cancelSelect{background:none; color:var(--ink-soft);}
   .vtab{flex:1; text-align:center; background:none; border:none; padding:0 0 8px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; border-bottom:1px solid transparent;}
   .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
 
@@ -254,7 +267,9 @@
       <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
     </div>
     <div id="listView">
+      <div class="list-bar" id="listBar"><button id="selectBtn">选择</button></div>
       <div id="threadList"></div>
+      <div class="select-foot" id="selectFoot"><span id="selCount">已选 0 条</span><button id="delSelected">删除</button><button id="cancelSelect">取消</button></div>
     </div>
 
     <div id="detailView" style="display:none;"></div>
@@ -336,8 +351,8 @@
   <div class="p-row" id="pwRow" style="display:none;"><div><div class="l">修改密码</div><div class="d">改一个新的登录密码</div></div><button id="pwBtn">修改</button></div>
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
-  <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.3</span></div>
+  <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记,可随时删掉</div></div><button id="seedBtn">载入</button></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.11.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -491,19 +506,41 @@
     if(v==='list') renderList();
   }
 
+  let selectMode=false, selectedIds={};
   function renderList(){
     const el=$('#threadList'); el.innerHTML='';
+    $('#listView').classList.toggle('selecting', selectMode);
+    $('#selectFoot').style.display = selectMode ? 'flex' : 'none';
+    $('#listBar').style.display = state.threads.length ? 'flex' : 'none';
     if(state.threads.length===0){
       el.innerHTML='<div class="empty"><div class="en">No threads yet</div><div class="big">渠里还没有水</div>点下面起你的第一条线索</div>'; return;
     }
     const sorted=state.threads.slice().sort((a,b)=> activeTime(b)-activeTime(a));
     sorted.forEach((t,i)=>{
       const cs=t.conceptIds.map(id=>{const c=concept(id);return c?c.label:'';}).filter(Boolean).join(', ');
-      const card=document.createElement('div'); card.className='thread';
-      card.innerHTML='<div class="num">'+pad(i+1)+'</div><div class="col"><div class="ttitle">'+esc(t.title)+'</div>'+
+      const card=document.createElement('div'); card.className='thread'+(selectMode?' selectable':'')+(selectedIds[t.id]?' selected':'');
+      const check=selectMode?'<div class="tcheck">'+(selectedIds[t.id]?'✓':'')+'</div>':'';
+      card.innerHTML=check+'<div class="num">'+pad(i+1)+'</div><div class="col"><div class="ttitle">'+esc(t.title)+'</div>'+
         '<div class="tmeta">'+(cs?'<span class="tconcepts">'+esc(cs)+'</span>':'')+'<span class="tstage">'+esc(stageOf(t))+'</span></div></div>';
-      card.addEventListener('click',()=>openThread(t.id)); el.appendChild(card);
+      card.addEventListener('click',()=>{
+        if(selectMode){ selectedIds[t.id]=!selectedIds[t.id]; if(!selectedIds[t.id])delete selectedIds[t.id]; renderList(); }
+        else openThread(t.id);
+      });
+      el.appendChild(card);
     });
+    const n=Object.keys(selectedIds).length;
+    $('#selCount').textContent='已选 '+n+' 条';
+    $('#delSelected').disabled = n===0;
+  }
+  function enterSelect(){ selectMode=true; selectedIds={}; renderList(); }
+  function exitSelect(){ selectMode=false; selectedIds={}; renderList(); }
+  function deleteSelected(){
+    const ids=Object.keys(selectedIds); if(!ids.length) return;
+    if(!confirm('删除选中的 '+ids.length+' 条线索?它们的所有片段也会删除(概念保留)。此操作不可撤销。')) return;
+    // 只删线索和其片段,概念保留
+    state.threads=state.threads.filter(t=>!selectedIds[t.id]);
+    state.entries=state.entries.filter(e=>!selectedIds[e.threadId]);
+    save(); exitSelect(); toast('已删除 '+ids.length+' 条');
   }
 
   function openThread(id){
@@ -728,6 +765,9 @@
     $('#pwRow').style.display = session ? 'flex' : 'none';
     if(session){ l.textContent=session.user.email; l.classList.add('acct-email'); d.textContent='已云端同步'; b.textContent='登出'; }
     else { l.textContent='未登录'; l.classList.remove('acct-email'); d.textContent='登录后数据云端同步,换设备不丢'; b.textContent='登录'; } }
+  $('#selectBtn').addEventListener('click',enterSelect);
+  $('#cancelSelect').addEventListener('click',exitSelect);
+  $('#delSelected').addEventListener('click',deleteSelected);
   $('#analyzeBtn').addEventListener('click',runAnalyze);
   $('#analyzeDone').addEventListener('click',hideSheets);
   $('#azCancel').addEventListener('click',hideSheets);
@@ -748,8 +788,19 @@
   $('#exportBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const d=new Date(); a.href=url; a.download='wenqu-backup-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.json'; a.click(); URL.revokeObjectURL(url); toast('已导出'); });
   $('#importBtn').addEventListener('click',()=>$('#importFile').click());
   $('#importFile').addEventListener('change',(e)=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!d.threads||!d.entries){ toast('格式不对'); return; } state=d; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已恢复'); }catch(err){ toast('读取失败'); } }; rd.readAsText(f); e.target.value=''; });
-  $('#clearBtn').addEventListener('click',async()=>{ if(confirm('确定清空全部?云端数据也会一并清空,建议先导出备份。')){ state={concepts:[],threads:[],entries:[]}; save0(); if(sb&&session){ toast('清空中…'); cloudReady=true; await cloudPush(true); } switchView('list'); $('#panel').classList.remove('show'); toast('已清空'); } });
-
+  $('#seedBtn').addEventListener('click',()=>{
+    if(!confirm('载入两条示例线索(睡眠、番茄工作法),演示怎么记录多轮思考。它们会加到你现有内容里,看完可随时删掉。')) return;
+    const fresh=JSON.parse(JSON.stringify(SEED));
+    // 重映射 id,避免和现有数据冲突
+    const cidMap={}, tidMap={};
+    fresh.concepts.forEach(c=>{ const nid='c_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); cidMap[c.id]=nid; c.id=nid; });
+    fresh.threads.forEach(t=>{ const nid='t_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); tidMap[t.id]=nid; t.id=nid; t.conceptIds=(t.conceptIds||[]).map(x=>cidMap[x]||x); });
+    fresh.entries.forEach(e=>{ e.id='e_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); e.threadId=tidMap[e.threadId]||e.threadId; });
+    state.concepts=state.concepts.concat(fresh.concepts);
+    state.threads=state.threads.concat(fresh.threads);
+    state.entries=state.entries.concat(fresh.entries);
+    save(); switchView('list'); $('#panel').classList.remove('show'); toast('示例已载入');
+  });
   let toastTimer=null;
   function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600); }
 
