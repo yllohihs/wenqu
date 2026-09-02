@@ -106,7 +106,9 @@
   .kpick button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; padding:5px 10px; border:0.5px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer;}
   .kpick button .kcn{font-family:'Noto Sans SC',sans-serif;}
 
-  .addseg{margin:4px 28px 0; text-align:center; padding:16px; border:0.5px solid var(--line); font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-soft); cursor:pointer; transition:.15s;}
+  .detail-foot{display:flex; gap:10px; margin:8px 28px 0;}
+  .addseg{flex:1; text-align:center; padding:15px; border:0.5px solid var(--line); font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:1px; color:var(--ink-soft); cursor:pointer; transition:.15s; background:none;}
+  .addseg.alt{color:var(--ink); border-color:var(--line-strong,var(--line)); border-color:rgba(22,21,19,.2);}
   .addseg:hover{background:var(--ink); color:var(--paper); border-color:var(--ink);}
 
   /* 脉络 */
@@ -305,7 +307,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.6.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.7.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -336,7 +338,7 @@
       return {
         concepts:(c.data||[]).map(r=>({id:r.id,label:r.label,x:r.x,y:r.y})),
         threads:(t.data||[]).map(r=>({id:r.id,title:r.title,conceptIds:tcMap[r.id]||[],createdAt:new Date(r.created_at).getTime()})),
-        entries:(e.data||[]).map(r=>({id:r.id,threadId:r.thread_id,kind:r.kind,body:r.body,source:r.source||'',link:r.link||'',createdAt:new Date(r.created_at).getTime(),occurredAt:r.occurred_at?new Date(r.occurred_at).getTime():new Date(r.created_at).getTime(),updatedAt:r.updated_at?new Date(r.updated_at).getTime():null}))
+        entries:(e.data||[]).map(r=>({id:r.id,threadId:r.thread_id,round:r.round||1,kind:r.kind,body:r.body,source:r.source||'',link:r.link||'',createdAt:new Date(r.created_at).getTime(),occurredAt:r.occurred_at?new Date(r.occurred_at).getTime():new Date(r.created_at).getTime(),updatedAt:r.updated_at?new Date(r.updated_at).getTime():null}))
       };
     }catch(err){ return null; }
   }
@@ -357,7 +359,7 @@
       const {error}=await sb.rpc('replace_all_data',{
         p_concepts: state.concepts.map(c=>({id:c.id,label:c.label,x:c.x,y:c.y})),
         p_threads: state.threads.map(t=>({id:t.id,title:t.title,createdAt:t.createdAt})),
-        p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt,occurredAt:e.occurredAt||e.createdAt,updatedAt:e.updatedAt||null})),
+        p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,round:e.round||1,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt,occurredAt:e.occurredAt||e.createdAt,updatedAt:e.updatedAt||null})),
         p_thread_concepts: tc
       });
       if(error){ console.error('云同步失败:',error.message); syncFailed=true; }
@@ -372,8 +374,7 @@
     {k:'ask', cn:'提问', en:'Inquiry'},
     {k:'source', cn:'引申', en:'Source'},
     {k:'iterate', cn:'迭代', en:'Iteration'},
-    {k:'conclude', cn:'初步结论', en:'Conclusion'},
-    {k:'update', cn:'更新', en:'Update'}
+    {k:'conclude', cn:'初步结论', en:'Conclusion'}
   ];
   const kInfo=(k)=>KINDS.find(x=>x.k===k)||KINDS[0];
 
@@ -388,7 +389,7 @@
       {id:'e2',threadId:'t1',kind:'source',body:'过度疲劳时身体会分泌皮质醇和肾上腺素维持清醒,这是一种应激反应,反而压制了睡意。',link:'',source:'Matthew Walker,《Why We Sleep》',createdAt:Date.now()-86400000*9},
       {id:'e3',threadId:'t1',kind:'iterate',body:'那是不是只要避免过度疲劳就行?似乎还不够——错过了自己的"睡眠窗口"也会这样,生物钟比疲劳程度更关键。',link:'',source:'',createdAt:Date.now()-86400000*7},
       {id:'e4',threadId:'t1',kind:'conclude',body:'难入睡不是因为不够累,而是错过睡眠窗口后,应激激素接管了身体。规律作息比"熬到累"更重要。',link:'',source:'',createdAt:Date.now()-86400000*7},
-      {id:'e5',threadId:'t1',kind:'update',body:'实践两周后发现:固定起床时间比固定睡觉时间更有效——起床时间稳了,睡意自然会在同一时段出现。',link:'',source:'',createdAt:Date.now()-86400000*1},
+      {id:'e5',threadId:'t1',round:2,kind:'iterate',body:'实践两周后回头看:固定起床时间比固定睡觉时间更有效——起床时间稳了,睡意自然会在同一时段出现。之前的结论要补一条。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
       {id:'e6',threadId:'t2',kind:'ask',body:'25分钟工作+5分钟休息,这个节奏为什么被认为有效?还是只是心理安慰?',link:'',source:'',createdAt:Date.now()-86400000*4},
       {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字,而在于"给自己一个明确的、短到不抗拒的开始",降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3}
     ]
@@ -406,9 +407,12 @@
   // 时间访问器(兼容老数据):occurredAt 缺省回落到 createdAt
   const occAt=(e)=>e.occurredAt||e.createdAt;
   // 主时间线只含非 update 片段,按发生时间排;update 单独成区
+  const rOf=(e)=>e.round||1;  // 轮次,老数据缺省第1轮
   const entriesOf=(tid)=>state.entries.filter(e=>e.threadId===tid).sort((a,b)=>occAt(a)-occAt(b));
-  const mainEntries=(tid)=>entriesOf(tid).filter(e=>e.kind!=='update');
-  const updateEntries=(tid)=>entriesOf(tid).filter(e=>e.kind==='update').sort((a,b)=>occAt(a)-occAt(b));
+  // 按轮次分组,返回 [{round:1,items:[...]},{round:2,items:[...]}]
+  const roundsOf=(tid)=>{ const es=entriesOf(tid); const map={}; es.forEach(e=>{ (map[rOf(e)]=map[rOf(e)]||[]).push(e); });
+    return Object.keys(map).map(Number).sort((a,b)=>a-b).map(r=>({round:r, items:map[r]})); };
+  const maxRound=(tid)=>{ const es=state.entries.filter(e=>e.threadId===tid); return es.length?Math.max(...es.map(rOf)):1; };
   const esc=(s)=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
   // 链接协议白名单:只允许 http(s),挡住 javascript:/data: 等 XSS 入口
   const safeUrl=(u)=>{ u=(u||'').trim(); return /^https?:\/\//i.test(u)?u:''; };
@@ -475,21 +479,31 @@
       s+='</div>';
       return s;
     };
-    const main=mainEntries(t.id).map(renderSeg).join('');
-    const ups=updateEntries(t.id);
-    let upBlock='';
-    if(ups.length){ upBlock='<div class="update-head"><span class="cn">后续更新</span> · Updates</div><div class="update-body">'+ups.map(renderSeg).join('')+'</div>'; }
+    const groups=roundsOf(t.id);
+    let body='';
+    groups.forEach((g,gi)=>{
+      const segsHtml=g.items.map(renderSeg).join('');
+      if(gi===0){
+        // 第一轮:主线程,直接铺开
+        body+=segsHtml;
+      } else {
+        // 后续轮:新想法区间,竖线缩进
+        body+='<div class="update-head"><span class="cn">新想法</span> · More '+g.round+'</div><div class="update-body">'+segsHtml+'</div>';
+      }
+    });
+    // 底部两个入口:续一段(当前最新轮) + 新想法(开启新一轮)
+    const foot='<div class="detail-foot"><button class="addseg" id="dAddSeg">＋ 续一段</button><button class="addseg alt" id="dNewRound">＋ 新想法</button></div><div style="height:100px"></div>';
     $('#detailView').innerHTML=
       '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle" contenteditable="true" spellcheck="false">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
-      '<div class="timeline">'+main+upBlock+'</div>'+
-      '<div class="addseg" id="dAddSeg">＋ Add Entry · 续一段</div><div style="height:100px"></div>';
+      '<div class="timeline">'+body+'</div>'+foot;
     $('#dBack').addEventListener('click',()=>switchView('list'));
     const dt=$('#dTitle');
     dt.addEventListener('blur',()=>{ const nv=dt.textContent.trim(); const t2=thread(currentThread); if(nv && nv!==t2.title){ t2.title=nv; save(); } else if(!nv){ dt.textContent=t2.title; } });
     dt.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); dt.blur(); } else if(e.key==='Escape'){ dt.textContent=thread(currentThread).title; dt.blur(); } });
     document.addEventListener('pointerdown', function outclick(ev){ const d=document.querySelector('#dTitle'); if(!d){ document.removeEventListener('pointerdown',outclick); return; } if(document.activeElement===d && ev.target!==d){ d.blur(); } }, true);
-    $('#dAddSeg').addEventListener('click',openSeg);
+    $('#dAddSeg').addEventListener('click',()=>{ pendingRound=null; openSeg(); });
+    $('#dNewRound').addEventListener('click',()=>{ pendingRound=maxRound(currentThread)+1; openSeg(); });
     $('#dAddConcept').addEventListener('click',openConceptSheet);
     document.querySelectorAll('#detailView .cc .x').forEach(x=>x.addEventListener('click',()=>detachConcept(x.getAttribute('data-cid'))));
     document.querySelectorAll('#detailView .ktag').forEach(l=>l.addEventListener('click',()=>{ editingKind=editingKind===l.getAttribute('data-eid')?null:l.getAttribute('data-eid'); renderDetail(); }));
@@ -520,6 +534,7 @@
   $('#tSave').addEventListener('click',()=>{ const title=$('#tTitle').value.trim(); if(!title){ $('#tTitle').classList.add('err'); $('#tTitle').focus(); return; } const id='t_'+Date.now(); state.threads.push({id,title,conceptIds:tSelConcepts.slice(),createdAt:Date.now()}); save(); hideSheets(); toast('线索起好了'); openThread(id); });
 
   let segKind='iterate', editingEntryId=null;
+  let pendingRound=null;  // 非null时,新片段进这一轮(用于新想法开启新轮)
   function openSeg(eid){
     editingEntryId = (typeof eid==='string') ? eid : null;
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
@@ -535,7 +550,7 @@
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.updatedAt=Date.now();
       if(segKind==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
       save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
-    else { state.entries.push({id:'e_'+Date.now(),threadId:currentThread,kind:segKind,body,link,source,createdAt:Date.now()}); save(); hideSheets(); renderDetail(); toast('已续一段'); }
+    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:'e_'+Date.now(),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'记下新想法':'已续一段'); }
   });
 
   function openConceptSheet(){ renderAttachChips(); $('#attachNew').value=''; showSheet('#conceptSheet'); }
