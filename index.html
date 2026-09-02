@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <title>问渠 · Wellspring</title>
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#FCFCFB" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#131311" media="(prefers-color-scheme: dark)" />
@@ -14,8 +14,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
+    --sat:env(safe-area-inset-top);
+    --sab:env(safe-area-inset-bottom);
     --paper:#FCFCFB; --card:#FFFFFF; --raise:#F6F6F4; --ink:#161513; --ink-soft:#6B6862; --ink-faint:#A3A099;
     --line:rgba(22,21,19,.12); --line-soft:rgba(22,21,19,.06);
   }
@@ -27,14 +30,13 @@
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{height:100%; background:var(--paper);}
-  body{min-height:100%;}
+  body{min-height:100%; background:var(--paper);}
   body{font-family:'Noto Sans SC','Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); line-height:1.6; overscroll-behavior-y:none; -webkit-font-smoothing:antialiased;}
   .en{font-family:'Inter',sans-serif;}
-  .safetop{position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:var(--paper); z-index:100;}
   .wrap{max-width:600px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
   ::-webkit-scrollbar{display:none;}
 
-  header{padding:calc(env(safe-area-inset-top) + 30px) 28px 18px; display:flex; align-items:center; justify-content:space-between;}
+  header{padding:calc(var(--sat) + 30px) 28px 18px; display:flex; align-items:center; justify-content:space-between;}
   .brand .brow{display:flex; align-items:flex-end; gap:12px;}
   .brand h1{font-size:24px; font-weight:400; letter-spacing:10px; color:var(--ink); padding-left:10px; margin:0;}
   .brand .ben{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); padding-bottom:5px;}
@@ -42,11 +44,6 @@
   .gear:hover{color:var(--ink);}
 
   /* 列表头 + filter */
-  .list-head{display:flex; align-items:center; justify-content:space-between; padding:6px 28px 0;}
-  .list-head .lbl{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink-faint);}
-  .sortbtn{background:none; border:none; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; display:flex; align-items:center; gap:6px; padding:0;}
-  .sortbtn b{color:var(--ink); font-weight:500;}
-  .sortbtn:hover{color:var(--ink-soft);}
 
   main{flex:1; padding:0 0 130px; position:relative;}
   .installbar{display:none; align-items:center; gap:10px; margin:14px 28px 0; padding:12px 16px; border:0.5px solid var(--line); font-size:12px; color:var(--ink-soft); letter-spacing:.3px;}
@@ -70,8 +67,7 @@
   .empty .en{font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px;}
 
   /* 详情 */
-  .detail-wrap{padding:0;}
-  .dtop{padding:calc(env(safe-area-inset-top) + 40px) 28px 0;}
+  .dtop{padding:calc(var(--sat) + 40px) 28px 0;}
   .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--paper); cursor:pointer; display:inline-flex; align-items:center; gap:7px; margin-bottom:28px; background:var(--ink); border:none; padding:8px 14px;}
   .back:active{opacity:.8;}
   .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text; outline:none; border-radius:2px;}
@@ -105,14 +101,13 @@
   .addseg:hover{background:var(--ink); color:var(--paper); border-color:var(--ink);}
 
   /* 脉络 */
-  .glx-head{padding:6px 28px 0; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink-faint);}
   #galaxyWrap{margin:14px 28px 0; border:0.5px solid var(--line); overflow:hidden; touch-action:none;}
   #galaxy{display:block; width:100%; height:58vh; max-height:480px;}
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
 
   .fabwrap{position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; z-index:30;}
-  .fab{width:100%; height:calc(50px + env(safe-area-inset-bottom) * 0.5); background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; padding:0; margin:0;}
+  .fab{width:100%; height:calc(50px + var(--sab) * 0.5); background:var(--ink); color:var(--paper); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:400; padding:0; margin:0;}
   .fab .cn{letter-spacing:3px; text-indent:3px; line-height:1;}
 
   /* 顶部视图切换 */
@@ -123,7 +118,7 @@
   /* 浮层 */
   .sheet-bg{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
   .sheet-bg.show{opacity:1; pointer-events:auto;}
-  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(env(safe-area-inset-bottom) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:50; max-width:600px; margin:0 auto; background:var(--paper); padding:28px 28px calc(var(--sab) + 24px); transform:translateY(100%); transition:transform .28s cubic-bezier(.3,.9,.3,1); max-height:90vh; overflow-y:auto; border-top:0.5px solid var(--line);}
   .sheet.show{transform:none;}
   .sheet .sh-title{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:20px;}
   .sheet label{display:block; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); margin:0 0 8px;}
@@ -156,7 +151,7 @@
   .btn .cn{font-family:'Noto Sans SC',sans-serif; letter-spacing:1.5px;}
   .btn+.btn{border-left:0.5px solid var(--ink);}
 
-  .panel{position:fixed; inset:0; z-index:60; background:var(--paper); padding:calc(env(safe-area-inset-top) + 40px) 28px calc(env(safe-area-inset-bottom) + 24px); max-width:600px; margin:0 auto; overflow-y:auto; transform:translateX(100%); transition:transform .25s ease;}
+  .panel{position:fixed; inset:0; z-index:60; background:var(--paper); padding:calc(var(--sat) + 40px) 28px calc(var(--sab) + 24px); max-width:600px; margin:0 auto; overflow-y:auto; transform:translateX(100%); transition:transform .25s ease;}
   .panel.show{transform:none;}
   .panel .p-head{display:flex; align-items:center; gap:14px; margin-bottom:28px;}
   .panel .p-head button{background:none;border:none;color:var(--ink);font-size:18px;cursor:pointer;padding:0; font-family:'Inter',sans-serif;}
@@ -169,12 +164,45 @@
   .p-note{font-size:12px; color:var(--ink-faint); line-height:1.9; margin-top:24px; letter-spacing:.3px;}
   .p-note b{color:var(--ink-soft); font-weight:400;}
 
+
+  /* 登录界面 */
+  .auth{position:fixed; inset:0; z-index:200; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:32px;}
+  .auth.hide{display:none;}
+  .auth-inner{width:100%; max-width:340px; text-align:center;}
+  .auth-brand{display:flex; align-items:baseline; justify-content:center; gap:12px; margin-bottom:8px;}
+  .auth-brand h1{font-size:30px; font-weight:400; letter-spacing:12px; color:var(--ink); padding-left:12px; margin:0;}
+  .auth-en{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint);}
+  .auth-sub{font-size:10px; letter-spacing:5px; color:var(--ink-faint); margin-bottom:44px;}
+  .auth-form{display:flex; flex-direction:column; gap:14px;}
+  .auth-field{font-family:'Noto Sans SC',sans-serif; font-size:15px; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:11px 2px; text-align:center;}
+  .auth-field:focus{outline:none; border-bottom-color:var(--ink);}
+  .auth-err{font-size:12px; color:#C0563A; min-height:16px; letter-spacing:.3px;}
+  .auth-btn{font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; padding:15px; cursor:pointer; border:none; background:var(--ink); color:var(--paper);}
+  .auth-btn.ghost{background:none; color:var(--ink-soft); border:0.5px solid var(--line);}
+  .auth-btn:active{opacity:.85;}
+  .auth-skip{margin-top:32px; font-size:12px; color:var(--ink-faint); cursor:pointer; letter-spacing:.3px;}
+  .auth-skip:active{color:var(--ink-soft);}
+  /* 设置页账号区 */
+  .acct-email{font-size:13px; color:var(--ink-soft); letter-spacing:.3px;}
   .toast{position:fixed; left:50%; bottom:100px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:12px 22px; z-index:80; opacity:0; pointer-events:none; transition:.25s;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
-<div class="safetop" aria-hidden="true"></div>
+<div class="auth" id="authView">
+  <div class="auth-inner">
+    <div class="auth-brand"><h1>问渠</h1><span class="auth-en">Wellspring</span></div>
+    <div class="auth-sub">为 有 源 头 活 水 来</div>
+    <div class="auth-form">
+      <input class="auth-field" id="authEmail" type="email" placeholder="邮箱" autocomplete="email" />
+      <input class="auth-field" id="authPass" type="password" placeholder="密码(至少 6 位)" autocomplete="current-password" />
+      <div class="auth-err" id="authErr"></div>
+      <button class="auth-btn" id="authSignin">登录</button>
+      <button class="auth-btn ghost" id="authSignup">注册新账号</button>
+    </div>
+    <div class="auth-skip" id="authSkip">先不登录,仅在本机使用 →</div>
+  </div>
+</div>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -246,10 +274,11 @@
 
 <div class="panel" id="panel">
   <div class="p-head"><button id="panelBack">← Back</button><h2>Settings · 设置</h2></div>
-  <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,换设备也不丢</div></div><button id="exportBtn">Export</button></div>
+  <div class="p-row"><div><div class="l" id="acctLabel">未登录</div><div class="d" id="acctDesc">登录后数据云端同步,换设备不丢</div></div><button id="acctBtn">登录</button></div>
+  <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 1.5.6</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>数据全部存在这台设备上</b>,不上传服务器。记得偶尔导出备份。<br><br><span style="font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Version 2.0.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -258,6 +287,58 @@
 (function(){
   'use strict';
   const KEY='wenqu-threads-v1';
+  // ===== Supabase 云同步 =====
+  const SB_URL='https://suizcgearwtxksywwnbx.supabase.co';
+  const SB_KEY='sb_publishable_Po6OtdXBFR-ARLfrCq3q_A_YwCItkcF';
+  let sb=null, session=null, syncing=false;
+  try{ if(window.supabase){ sb=window.supabase.createClient(SB_URL, SB_KEY); } }catch(e){}
+
+  async function cloudPull(){
+    if(!sb||!session) return null;
+    try{
+      const [c,t,e,tc]=await Promise.all([
+        sb.from('concepts').select('*'),
+        sb.from('threads').select('*'),
+        sb.from('entries').select('*'),
+        sb.from('thread_concepts').select('*')
+      ]);
+      if(c.error||t.error||e.error||tc.error) return null;
+      // 组装成本地结构
+      const tcMap={};
+      (tc.data||[]).forEach(r=>{ (tcMap[r.thread_id]=tcMap[r.thread_id]||[]).push(r.concept_id); });
+      return {
+        concepts:(c.data||[]).map(r=>({id:r.id,label:r.label,x:r.x,y:r.y})),
+        threads:(t.data||[]).map(r=>({id:r.id,title:r.title,conceptIds:tcMap[r.id]||[],createdAt:new Date(r.created_at).getTime()})),
+        entries:(e.data||[]).map(r=>({id:r.id,threadId:r.thread_id,kind:r.kind,body:r.body,source:r.source||'',link:r.link||'',createdAt:new Date(r.created_at).getTime()}))
+      };
+    }catch(err){ return null; }
+  }
+
+  async function cloudPush(){
+    if(!sb||!session||syncing) return;
+    syncing=true;
+    try{
+      const uid=session.user.id;
+      // 全量覆盖:先删自己的,再插入当前 state(小数据量,简单可靠)
+      await Promise.all([
+        sb.from('thread_concepts').delete().eq('user_id',uid),
+        sb.from('entries').delete().eq('user_id',uid),
+        sb.from('threads').delete().eq('user_id',uid),
+        sb.from('concepts').delete().eq('user_id',uid)
+      ]);
+      if(state.concepts.length)
+        await sb.from('concepts').insert(state.concepts.map(c=>({id:c.id,label:c.label,x:c.x,y:c.y,user_id:uid})));
+      if(state.threads.length)
+        await sb.from('threads').insert(state.threads.map(t=>({id:t.id,title:t.title,user_id:uid,created_at:new Date(t.createdAt).toISOString()})));
+      if(state.entries.length)
+        await sb.from('entries').insert(state.entries.map(e=>({id:e.id,thread_id:e.threadId,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',user_id:uid,created_at:new Date(e.createdAt).toISOString()})));
+      const tcRows=[];
+      state.threads.forEach(t=>(t.conceptIds||[]).forEach(cid=>tcRows.push({thread_id:t.id,concept_id:cid,user_id:uid})));
+      if(tcRows.length) await sb.from('thread_concepts').insert(tcRows);
+    }catch(err){}
+    syncing=false;
+  }
+
   const cssv=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const KINDS=[
     {k:'ask', cn:'提问', en:'Inquiry'},
@@ -285,9 +366,11 @@
     ]
   };
 
-  let state=load(); let sortMode='new';
+  let state=load();
   function load(){ try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){} return JSON.parse(JSON.stringify(SEED)); }
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  let pushTimer=null;
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    if(sb&&session){ clearTimeout(pushTimer); pushTimer=setTimeout(cloudPush,800); } }
 
   const $=(s)=>document.querySelector(s);
   const concept=(id)=>state.concepts.find(c=>c.id===id);
@@ -324,7 +407,7 @@
     if(state.threads.length===0){
       el.innerHTML='<div class="empty"><div class="en">No threads yet</div><div class="big">渠里还没有水</div>点下面起你的第一条线索</div>'; return;
     }
-    const sorted=state.threads.slice().sort((a,b)=> sortMode==='new' ? activeTime(b)-activeTime(a) : activeTime(a)-activeTime(b));
+    const sorted=state.threads.slice().sort((a,b)=> activeTime(b)-activeTime(a));
     sorted.forEach((t,i)=>{
       const cs=t.conceptIds.map(id=>{const c=concept(id);return c?c.label:'';}).filter(Boolean).join(', ');
       const card=document.createElement('div'); card.className='thread';
@@ -458,7 +541,11 @@
     if(selected){ const ts=state.threads.filter(t=>t.conceptIds.includes(id)); const titles=ts.slice(0,2).map(t=>t.title).join(' / '); hint.innerHTML='<b>'+esc(c.label)+'</b> · '+cnt+' 条线索'+(titles?' · '+esc(titles)+(ts.length>2?'…':''):''); }
     else { hint.textContent='拖动节点换位置,点一下看这个概念下有哪些线索'; } renderGalaxy(); }
 
-  $('#gearBtn').addEventListener('click',()=>$('#panel').classList.add('show'));
+  function refreshAcct(){ const l=$('#acctLabel'),d=$('#acctDesc'),b=$('#acctBtn');
+    if(session){ l.textContent=session.user.email; l.classList.add('acct-email'); d.textContent='已云端同步'; b.textContent='登出'; }
+    else { l.textContent='未登录'; l.classList.remove('acct-email'); d.textContent='登录后数据云端同步,换设备不丢'; b.textContent='登录'; } }
+  $('#gearBtn').addEventListener('click',()=>{ refreshAcct(); $('#panel').classList.add('show'); });
+  $('#acctBtn').addEventListener('click',()=>{ if(session){ if(confirm('登出?本机数据保留,云端数据不受影响。')) doLogout(); } else { $('#panel').classList.remove('show'); showAuth(); } });
   $('#panelBack').addEventListener('click',()=>$('#panel').classList.remove('show'));
   $('#exportBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const d=new Date(); a.href=url; a.download='wenqu-backup-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.json'; a.click(); URL.revokeObjectURL(url); toast('已导出'); });
   $('#importBtn').addEventListener('click',()=>$('#importFile').click());
@@ -468,6 +555,57 @@
   let toastTimer=null;
   function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600); }
 
+  // ===== 登录/注册/登出 交互 =====
+  const authView=$('#authView');
+  function showAuth(){ authView.classList.remove('hide'); }
+  function hideAuth(){ authView.classList.add('hide'); }
+  function authErr(msg){ $('#authErr').textContent=msg||''; }
+
+  async function doSignin(){
+    if(!sb){ authErr('网络未就绪,请检查连接后重试'); return; }
+    const email=$('#authEmail').value.trim(), pass=$('#authPass').value;
+    if(!email||!pass){ authErr('请填邮箱和密码'); return; }
+    authErr('登录中…');
+    const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){ authErr(error.message.includes('Invalid')?'邮箱或密码不对':error.message); return; }
+    session=data.session; authErr(''); await afterLogin();
+  }
+  async function doSignup(){
+    if(!sb){ authErr('网络未就绪,请检查连接后重试'); return; }
+    const email=$('#authEmail').value.trim(), pass=$('#authPass').value;
+    if(!email||!pass){ authErr('请填邮箱和密码'); return; }
+    if(pass.length<6){ authErr('密码至少 6 位'); return; }
+    authErr('注册中…');
+    const {data,error}=await sb.auth.signUp({email,password:pass});
+    if(error){ authErr(error.message); return; }
+    if(data.session){ session=data.session; authErr(''); await afterFirstSignup(); }
+    else { authErr('注册成功,请登录'); }
+  }
+  async function afterFirstSignup(){
+    hideAuth(); toast('账号已创建');
+    if(state.threads.length){ await cloudPush(); }
+    switchView('list');
+  }
+  async function afterLogin(){
+    hideAuth(); toast('已登录,正在同步…');
+    const cloud=await cloudPull();
+    if(cloud && (cloud.threads.length||cloud.concepts.length)){ state=cloud; save0(); }
+    else if(state.threads.length){ await cloudPush(); }
+    switchView('list'); toast('已同步');
+  }
+  function save0(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  async function doLogout(){
+    if(sb&&session){ await sb.auth.signOut(); }
+    session=null; $('#panel').classList.remove('show'); showAuth();
+    $('#authEmail').value=''; $('#authPass').value=''; authErr('');
+  }
+
+  $('#authSignin').addEventListener('click',doSignin);
+  $('#authSignup').addEventListener('click',doSignup);
+  $('#authSkip').addEventListener('click',()=>{ hideAuth(); switchView('list'); });
+  $('#authPass').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSignin(); });
+
   if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{})); }
   let deferredPrompt=null;
   window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; $('#installBar').classList.add('show'); });
@@ -475,7 +613,18 @@
   window.addEventListener('appinstalled',()=>$('#installBar').classList.remove('show'));
 
   $('#fabWrap').style.display='block';
-  renderList();
+  (async function boot(){
+    renderList();
+    if(sb){
+      const {data}=await sb.auth.getSession();
+      if(data && data.session){
+        session=data.session; hideAuth();
+        const cloud=await cloudPull();
+        if(cloud && (cloud.threads.length||cloud.concepts.length)){ state=cloud; save0(); switchView('list'); }
+        else if(state.threads.length){ await cloudPush(); }
+      } else { showAuth(); }
+    } else { showAuth(); authErr('云同步暂不可用,可先本地使用'); }
+  })();
 })();
 </script>
 </body>
