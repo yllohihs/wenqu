@@ -23,6 +23,7 @@
   :root{
     --sat:env(safe-area-inset-top);
     --sab:env(safe-area-inset-bottom);
+    --tab-grad:rgba(22,21,19,.07); --tab-grad-0:rgba(22,21,19,0);
     --paper:#FCFCFB; --card:#FFFFFF; --raise:#F6F6F4; --ink:#161513; --ink-soft:#6B6862; --ink-faint:#A3A099;
     --line:rgba(22,21,19,.12); --line-soft:rgba(22,21,19,.06);
   }
@@ -30,6 +31,7 @@
     :root{
       --paper:#131311; --card:#1B1B18; --raise:#201F1B; --ink:#F0EEE7; --ink-soft:#9B9890; --ink-faint:#6A6860;
       --line:rgba(240,238,231,.14); --line-soft:rgba(240,238,231,.07);
+      --tab-grad:rgba(240,238,231,.10); --tab-grad-0:rgba(240,238,231,0);
     }
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
@@ -61,7 +63,7 @@
   .selecting .thread .num{padding-top:0; align-self:center;}
   .thread .num{font-family:'Inter',sans-serif; font-size:11px; color:var(--ink-faint); letter-spacing:1px; padding-top:3px; min-width:22px;}
   .thread .col{flex:1; min-width:0;}
-  .thread .ttitle{font-size:14.5px; font-weight:400; line-height:1.6; color:var(--ink); letter-spacing:.2px;}
+  .thread .ttitle{font-size:15px; font-weight:400; line-height:1.6; color:var(--ink); letter-spacing:.2px;}
   .thread .tmeta{display:flex; align-items:center; gap:10px; margin-top:12px;}
   .thread .tconcepts{font-size:11px; letter-spacing:.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .thread .tstage{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); margin-left:auto; white-space:nowrap;}
@@ -143,7 +145,7 @@
   .fab .cn{letter-spacing:3px; text-indent:3px; line-height:1;}
 
   /* 顶部视图切换 */
-  .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
+  .view-tabs{position:relative; display:flex; align-items:stretch; margin:24px 28px 0; height:46px;}
   .topicons{display:flex; align-items:center; gap:10px;}
   .icon-btn{display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; background:none; border:none; color:var(--ink-faint); cursor:pointer;}
   .icon-btn:hover{color:var(--ink-soft);}
@@ -152,14 +154,18 @@
   .thread .tcheck{flex-shrink:0; align-self:center; width:20px; height:20px; border:1.5px solid rgba(22,21,19,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--paper); transition:.12s;}
   .thread.selected .tcheck{background:var(--ink); border-color:var(--ink);}
   .thread.selected{background:var(--raise);}
-  .select-foot{display:none; position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--paper); border-top:0.5px solid var(--line); padding:16px 28px calc(var(--sab) + 16px); align-items:center; gap:16px; z-index:35;}
+  .select-foot{display:none; position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--paper); border-top:0.5px solid var(--line); padding:16px 28px calc(var(--sab) + 16px); align-items:center; z-index:35;}
+  .sf-actions{margin-left:auto; display:flex; align-items:center; gap:6px;}
   .select-foot #selCount{font-size:13px; color:var(--ink-soft); flex:1;}
   .select-foot button{font-family:'Noto Sans SC',sans-serif; font-size:11px; letter-spacing:2px; padding:8px 14px; cursor:pointer; border:none; background:none;}
-  .select-foot #delSelected{color:#C0392B;}
-  .select-foot #delSelected:disabled{opacity:.35; cursor:default;}
+  .select-foot #delSelected{color:#A32D2D;}
+  .select-foot #delSelected:disabled{color:var(--ink-faint); cursor:default;}
   .select-foot #cancelSelect{color:var(--ink-soft);}
-  .vtab{flex:1; text-align:center; background:none; border:none; padding:0 0 8px; font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; border-bottom:1px solid transparent;}
-  .vtab.on{color:var(--ink); border-bottom-color:var(--ink);}
+  .tab-shape{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0;}
+  .vtab{position:relative; z-index:1; background:none; border:none; padding:0; font-family:'Inter',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint); cursor:pointer; white-space:nowrap; display:flex; align-items:center; justify-content:center; transition:flex .32s cubic-bezier(.4,0,.2,1), color .2s;}
+  .vtab.on{flex:1; color:var(--ink);}
+  .vtab:not(.on){flex:0 0 auto; padding:0 16px; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:1px; text-transform:none;}
+  .vtab:not(.on) .en-part{display:none;}
 
   /* 浮层 */
   .sheet-bg{position:fixed; top:var(--sat); left:0; right:0; bottom:0; background:rgba(20,20,18,.28); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:40; opacity:0; pointer-events:none; transition:.2s;}
@@ -267,13 +273,17 @@
   <main>
     <div class="installbar" id="installBar">添加到主屏幕<button id="installBtn">Install</button></div>
 
-    <div class="view-tabs">
+    <div class="view-tabs" id="viewTabs">
+      <svg class="tab-shape" id="tabShape" viewBox="0 0 320 46" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="tabGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--tab-grad)"/><stop offset="1" stop-color="var(--tab-grad-0)"/></linearGradient></defs>
+        <path id="tabPath" fill="url(#tabGrad)" d=""/>
+      </svg>
       <button class="vtab on" data-view="list">Threads · 线索</button>
       <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
     </div>
     <div id="listView">
       <div id="threadList" style="padding-top:14px;"></div>
-      <div class="select-foot" id="selectFoot"><span id="selCount">已选 0 条</span><button id="delSelected">删除</button><button id="cancelSelect">取消</button></div>
+      <div class="select-foot" id="selectFoot"><span id="selCount">已选 0 条</span><div class="sf-actions"><button id="delSelected">删除</button><button id="cancelSelect">取消</button></div></div>
     </div>
 
     <div id="detailView" style="display:none;"></div>
@@ -356,7 +366,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记,可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.12.4</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.13.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -490,8 +500,43 @@
     return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
   function stageOf(t){ const l=lastEntry(t.id); return l?kInfo(l.kind).cn:'空'; }
 
+  // tab 标签的中英全称/纯中文
+  const TAB_LABELS={list:{full:'Threads · 线索', cn:'线索'}, galaxy:{full:'Constellation · 脉络', cn:'脉络'}};
+  function renderTabShape(){
+    // 画渐变弧形页签,盖在当前选中的 tab 下方。弧线朝向另一个 tab(内侧)。
+    const tabs=[...document.querySelectorAll('.vtab')];
+    const onTab=document.querySelector('.vtab.on'); if(!onTab) return;
+    const wrap=document.querySelector('#viewTabs'); const wr=wrap.getBoundingClientRect();
+    const or=onTab.getBoundingClientRect();
+    // 相对容器的坐标,换算到 viewBox 320宽
+    const sx=320/wr.width;
+    const L=(or.left-wr.left)*sx, R=(or.right-wr.left)*sx;
+    const isLeft = onTab===tabs[0]; // 选中的是否在左
+    const H=46, top=4, rad=12;
+    let d;
+    if(isLeft){
+      // 页签在左,右侧缓弧收下: 左上圆角,右侧长弧到基线
+      const bodyR=R-40; // 弧线起点
+      d=`M ${L} ${H} L ${L} ${top+rad} Q ${L} ${top} ${L+rad} ${top} L ${bodyR} ${top} Q ${R} ${top} ${R} ${H} Z`;
+    } else {
+      // 页签在右,左侧缓弧: 右上圆角,左侧长弧
+      const bodyL=L+40;
+      d=`M ${R} ${H} L ${R} ${top+rad} Q ${R} ${top} ${R-rad} ${top} L ${bodyL} ${top} Q ${L} ${top} ${L} ${H} Z`;
+    }
+    document.querySelector('#tabPath').setAttribute('d', d);
+  }
+  function updateTabLabels(){
+    document.querySelectorAll('.vtab').forEach(t=>{
+      const v=t.dataset.view; const on=t.classList.contains('on');
+      t.textContent = on ? TAB_LABELS[v].full : TAB_LABELS[v].cn;
+    });
+    // 布局稳定后再画形状
+    requestAnimationFrame(()=>requestAnimationFrame(renderTabShape));
+  }
   document.querySelectorAll('.vtab').forEach(t=>{ t.addEventListener('click',()=>{
-    document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); switchView(t.dataset.view); }); });
+    document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+    updateTabLabels(); switchView(t.dataset.view); }); });
+  window.addEventListener('resize',()=>{ renderTabShape(); });
 
   /* ═══════════════════════════════════════════════════════
      模块:UI-LIST · 列表与导航
@@ -906,6 +951,7 @@
   window.addEventListener('appinstalled',()=>$('#installBar').classList.remove('show'));
 
   $('#fabWrap').style.display='block';
+  updateTabLabels();
   (async function boot(){
     renderList();
     if(sb){
