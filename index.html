@@ -337,7 +337,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">清空重来</div><div class="d">删掉全部线索</div></div><button class="warn" id="clearBtn">Clear</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.2</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.9.3</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -544,12 +544,12 @@
         // 第一轮:主线程,直接铺开
         body+=segsHtml+'<div class="round-add">'+addInRound+'</div>';
       } else {
-        // 后续轮:新想法区间,竖线缩进,续一段也在缩进区内
-        body+='<div class="update-head"><span class="cn">新想法</span> · More '+g.round+'</div><div class="update-body">'+segsHtml+'<div class="round-add">'+addInRound+'</div></div>';
+        // 后续轮:更新区间,竖线缩进,续一段也在缩进区内
+        body+='<div class="update-head"><span class="cn">更新</span> · Update '+g.round+'</div><div class="update-body">'+segsHtml+'<div class="round-add">'+addInRound+'</div></div>';
       }
     });
-    // 底部只留"新想法"(开启新一轮)
-    const foot='<div class="detail-foot"><button class="addseg alt" id="dNewRound">＋ 新想法</button></div><div style="height:100px"></div>';
+    // 底部只留"更新"(开启新一轮)
+    const foot='<div class="detail-foot"><button class="addseg alt" id="dNewRound">＋ 更新</button></div><div style="height:100px"></div>';
     $('#detailView').innerHTML=
       '<div class="dtop"><button class="back" id="dBack">← Threads</button><div class="dtitle" id="dTitle" contenteditable="true" spellcheck="false">'+esc(t.title)+'</div>'+
       '<div class="dconcepts">'+concepts+'<button class="addc" id="dAddConcept">+ Concept</button></div></div>'+
@@ -561,7 +561,7 @@
     document.addEventListener('pointerdown', function outclick(ev){ const d=document.querySelector('#dTitle'); if(!d){ document.removeEventListener('pointerdown',outclick); return; } if(document.activeElement===d && ev.target!==d){ d.blur(); } }, true);
     // 各区的"续一段":往指定 round 加
     document.querySelectorAll('#detailView [data-addround]').forEach(b=>b.addEventListener('click',()=>{ pendingRound=parseInt(b.getAttribute('data-addround'),10); openSeg(); }));
-    // "新想法":开启新一轮
+    // "更新":开启新一轮
     $('#dNewRound').addEventListener('click',()=>{ pendingRound=maxRound(currentThread)+1; openSeg(); });
     $('#dAddConcept').addEventListener('click',openConceptSheet);
     document.querySelectorAll('#detailView .cc .x').forEach(x=>x.addEventListener('click',()=>detachConcept(x.getAttribute('data-cid'))));
@@ -593,7 +593,7 @@
   $('#tSave').addEventListener('click',()=>{ const title=$('#tTitle').value.trim(); if(!title){ $('#tTitle').classList.add('err'); $('#tTitle').focus(); return; } const id='t_'+Date.now(); state.threads.push({id,title,conceptIds:tSelConcepts.slice(),createdAt:Date.now()}); save(); hideSheets(); toast('线索起好了'); openThread(id); });
 
   let segKind='iterate', editingEntryId=null;
-  let pendingRound=null;  // 非null时,新片段进这一轮(用于新想法开启新轮)
+  let pendingRound=null;  // 非null时,新片段进这一轮(用于'更新'开启新轮)
   function openSeg(eid){
     editingEntryId = (typeof eid==='string') ? eid : null;
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
@@ -609,7 +609,7 @@
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.updatedAt=Date.now();
       if(segKind==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
       save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
-    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:'e_'+Date.now(),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'记下新想法':'已续一段'); }
+    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:'e_'+Date.now(),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'已更新':'已续一段'); }
   });
 
   function openConceptSheet(){ renderAttachChips(); $('#attachNew').value=''; showSheet('#conceptSheet'); }
