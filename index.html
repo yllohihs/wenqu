@@ -366,7 +366,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记,可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.13.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.13.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -514,13 +514,14 @@
     const isLeft = onTab===tabs[0]; // 选中的是否在左
     const H=46, top=4, rad=12;
     let d;
+    const arcLen=(R-L)*0.32; // 弧线水平跨度:占页签宽度约1/3,长而缓
     if(isLeft){
-      // 页签在左,右侧缓弧收下: 左上圆角,右侧长弧到基线
-      const bodyR=R-40; // 弧线起点
+      // 页签在左,右侧长缓弧收下: 左上圆角,顶边平,右侧从 R-arcLen 起一道长弧到基线
+      const bodyR=R-arcLen;
       d=`M ${L} ${H} L ${L} ${top+rad} Q ${L} ${top} ${L+rad} ${top} L ${bodyR} ${top} Q ${R} ${top} ${R} ${H} Z`;
     } else {
-      // 页签在右,左侧缓弧: 右上圆角,左侧长弧
-      const bodyL=L+40;
+      // 页签在右,左侧长缓弧(镜像)
+      const bodyL=L+arcLen;
       d=`M ${R} ${H} L ${R} ${top+rad} Q ${R} ${top} ${R-rad} ${top} L ${bodyL} ${top} Q ${L} ${top} ${L} ${H} Z`;
     }
     document.querySelector('#tabPath').setAttribute('d', d);
