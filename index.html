@@ -55,17 +55,17 @@
   .installbar button{margin-left:auto; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:7px 14px; border:none; background:var(--ink); color:var(--paper); cursor:pointer;}
 
   /* 线索列表 */
-  .thread{padding:19px 28px; border-top:0.5px solid var(--line-soft); cursor:pointer; transition:background .15s; display:flex; gap:18px; animation:fade .4s ease both;}
+  .thread{padding:14px 28px; cursor:pointer; transition:background .15s; display:flex; gap:16px; animation:fade .4s ease both;}
   .thread:hover{background:var(--raise);}
   @keyframes fade{from{opacity:0;} to{opacity:1;}}
   .thread .num{font-family:'Inter',sans-serif; font-size:11px; color:var(--ink-faint); letter-spacing:1px; padding-top:3px; min-width:22px;}
   .thread .col{flex:1; min-width:0;}
-  .thread .ttitle{font-size:16px; font-weight:400; line-height:1.6; color:var(--ink); letter-spacing:.2px;}
+  .thread .ttitle{font-size:13px; font-weight:400; line-height:1.6; color:var(--ink); letter-spacing:.2px;}
   .thread .tmeta{display:flex; align-items:center; gap:10px; margin-top:12px;}
   .thread .tconcepts{font-size:11px; letter-spacing:.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .thread .tstage{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); margin-left:auto; white-space:nowrap;}
 
-  #threadList .thread:first-child{border-top:0.5px solid var(--line);}
+
   .empty{text-align:center; padding:80px 32px; color:var(--ink-faint);}
   .empty .big{font-size:17px; color:var(--ink-soft); margin-bottom:10px; letter-spacing:1px;}
   .empty .en{font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px;}
@@ -143,11 +143,12 @@
 
   /* 顶部视图切换 */
   .view-tabs{display:flex; align-items:center; margin:24px 28px 0;}
-  .list-bar{display:flex; justify-content:flex-end; padding:10px 28px 4px;}
-  .list-bar button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); background:none; border:none; cursor:pointer;}
-  .list-bar button:hover{color:var(--ink-soft);}
-  .thread.selectable{padding-left:52px; position:relative;}
-  .thread .tcheck{position:absolute; left:24px; top:50%; transform:translateY(-50%); width:20px; height:20px; border:1.5px solid var(--line-strong,var(--line)); border-color:rgba(22,21,19,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--paper);}
+  .topicons{display:flex; align-items:center; gap:16px;}
+  .icon-btn{display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; background:none; border:none; color:var(--ink-faint); cursor:pointer;}
+  .icon-btn:hover{color:var(--ink-soft);}
+  .icon-btn.on{color:var(--ink);}
+  .icon-btn svg{display:block;}
+  .thread .tcheck{flex-shrink:0; align-self:center; width:20px; height:20px; border:1.5px solid rgba(22,21,19,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--paper); transition:.12s;}
   .thread.selected .tcheck{background:var(--ink); border-color:var(--ink);}
   .thread.selected{background:var(--raise);}
   .select-foot{display:none; position:fixed; left:0; right:0; bottom:0; max-width:600px; margin:0 auto; background:var(--paper); border-top:0.5px solid var(--line); padding:16px 28px calc(var(--sab) + 16px); align-items:center; gap:16px; z-index:35;}
@@ -256,7 +257,10 @@
     <div class="brand">
       <div class="brow"><h1>问渠</h1><span class="ben">Wellspring</span></div>
     </div>
-    <button class="gear" id="gearBtn" aria-label="settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/><path d="M3 12.5c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/><path d="M3 17c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/></svg></button>
+    <div class="topicons">
+      <button class="icon-btn" id="selectBtn" aria-label="select"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8"/></svg></button>
+      <button class="icon-btn" id="gearBtn" aria-label="settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/><path d="M3 12.5c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/><path d="M3 17c2.6-2.6 5.2-2.6 7.8 0s5.2 2.6 7.8 0"/></svg></button>
+    </div>
   </header>
 
   <main>
@@ -267,7 +271,6 @@
       <button class="vtab" data-view="galaxy">Constellation · 脉络</button>
     </div>
     <div id="listView">
-      <div class="list-bar" id="listBar"><button id="selectBtn">选择</button></div>
       <div id="threadList"></div>
       <div class="select-foot" id="selectFoot"><span id="selCount">已选 0 条</span><button id="delSelected">删除</button><button id="cancelSelect">取消</button></div>
     </div>
@@ -352,7 +355,7 @@
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件,再多一重保险</div></div><button id="exportBtn">Export</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复,覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记,可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.11.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程:提问、引申、迭代、初步结论,日后有新讨论还能继续更新。一条线索可挂多个概念,概念之间便连成脉络。<br><br>问渠那得清如许,为有源头活水来。<br><br><b>登录后数据云端同步</b>,换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.12.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -511,7 +514,8 @@
     const el=$('#threadList'); el.innerHTML='';
     $('#listView').classList.toggle('selecting', selectMode);
     $('#selectFoot').style.display = selectMode ? 'flex' : 'none';
-    $('#listBar').style.display = state.threads.length ? 'flex' : 'none';
+    $('#selectBtn').style.display = state.threads.length ? 'flex' : 'none';
+    $('#selectBtn').classList.toggle('on', selectMode);
     if(state.threads.length===0){
       el.innerHTML='<div class="empty"><div class="en">No threads yet</div><div class="big">渠里还没有水</div>点下面起你的第一条线索</div>'; return;
     }
@@ -765,7 +769,7 @@
     $('#pwRow').style.display = session ? 'flex' : 'none';
     if(session){ l.textContent=session.user.email; l.classList.add('acct-email'); d.textContent='已云端同步'; b.textContent='登出'; }
     else { l.textContent='未登录'; l.classList.remove('acct-email'); d.textContent='登录后数据云端同步,换设备不丢'; b.textContent='登录'; } }
-  $('#selectBtn').addEventListener('click',enterSelect);
+  $('#selectBtn').addEventListener('click',()=>{ selectMode?exitSelect():enterSelect(); });
   $('#cancelSelect').addEventListener('click',exitSelect);
   $('#delSelected').addEventListener('click',deleteSelected);
   $('#analyzeBtn').addEventListener('click',runAnalyze);
