@@ -357,11 +357,13 @@
 <div class="panel" id="panel">
   <div class="p-head"><button id="panelBack">← Back</button><h2>Settings · 设置</h2></div>
   <div class="p-row"><div><div class="l" id="acctLabel">未登录</div><div class="d" id="acctDesc">登录后数据云端同步，换设备不丢</div></div><button id="acctBtn">登录</button></div>
+  <div class="p-row" id="syncRow" style="display:none;"><div><div class="l">云同步状态</div><div class="d" id="syncDesc"></div></div><button id="syncBtn">立即同步</button></div>
   <div class="p-row" id="pwRow" style="display:none;"><div><div class="l">修改密码</div><div class="d">改一个新的登录密码</div></div><button id="pwBtn">修改</button></div>
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件，再多一重保险</div></div><button id="exportBtn">Export</button></div>
+  <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.3</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -374,6 +376,8 @@
   const SB_URL='https://suizcgearwtxksywwnbx.supabase.co';
   const SB_KEY='sb_publishable_Po6OtdXBFR-ARLfrCq3q_A_YwCItkcF';
   let sb=null, session=null, syncing=false, cloudReady=false, syncFailed=false;
+  let lastSync={at:0, ok:null, msg:''};   // 最近一次同步结果,设置页可见
+  let pendingPush=false;                  // 推送进行中又来了新保存,结束后补推
   try{ if(window.supabase){ sb=window.supabase.createClient(SB_URL, SB_KEY); } }catch(e){}
 
 
@@ -390,7 +394,7 @@
         sb.from('entries').select('*'),
         sb.from('thread_concepts').select('*')
       ]);
-      if(c.error||t.error||e.error||tc.error) return null;
+      const er=c.error||t.error||e.error||tc.error; if(er){ lastSync={at:Date.now(),ok:false,msg:'拉取失败：'+er.message}; return null; }
       // 组装成本地结构
       const tcMap={};
       (tc.data||[]).forEach(r=>{ (tcMap[r.thread_id]=tcMap[r.thread_id]||[]).push(r.concept_id); });
@@ -404,9 +408,10 @@
 
   // 写入守卫 cloudReady:只有云端状态已确认(拉取过或确认为空),才允许推送覆盖(声明在上方)
   async function cloudPush(force){
-    if(!sb||!session||syncing) return false;
+    if(!sb||!session) return false;
+    if(syncing){ pendingPush=true; return false; }
     // 守卫:云端尚未就绪时,禁止用当前 state 覆盖云端(防止空数据抹掉云端真实数据)
-    if(!cloudReady && !force){ return false; }
+    if(!cloudReady && !force){ lastSync={at:Date.now(),ok:false,msg:'云端未就绪（启动时没拉到云端），本次未推送'}; return false; }
     syncing=true;
     let ok=false;
     try{
@@ -421,10 +426,11 @@
         p_entries: state.entries.map(e=>({id:e.id,threadId:e.threadId,round:e.round||1,kind:e.kind,body:e.body,source:e.source||'',link:e.link||'',createdAt:e.createdAt,occurredAt:e.occurredAt||e.createdAt,updatedAt:e.updatedAt||null})),
         p_thread_concepts: tc
       });
-      if(error){ console.error('云同步失败：',error.message); syncFailed=true; }
-      else { ok=true; syncFailed=false; }
-    }catch(err){ console.error('云同步异常：',err); syncFailed=true; }
+      if(error){ console.error('云同步失败：',error.message); lastSync={at:Date.now(),ok:false,msg:'推送失败：'+error.message}; if(!syncFailed) toast('云端同步失败，修改暂只在本机'); syncFailed=true; }
+      else { ok=true; syncFailed=false; lastSync={at:Date.now(),ok:true,msg:''}; }
+    }catch(err){ console.error('云同步异常：',err); lastSync={at:Date.now(),ok:false,msg:'推送异常：'+(err&&err.message||err)}; syncFailed=true; }
     syncing=false;
+    if(pendingPush){ pendingPush=false; return cloudPush(force); }
     return ok;
   }
 
@@ -796,7 +802,7 @@
   $('#azCancel').addEventListener('click',hideSheets);
   $('#azGo').addEventListener('click',doAnalyze);
   document.querySelectorAll('#azRange button').forEach(b=>b.addEventListener('click',()=>setAzRange(b.getAttribute('data-range'))));
-  $('#gearBtn').addEventListener('click',()=>{ refreshAcct(); $('#panel').classList.add('show'); });
+  $('#gearBtn').addEventListener('click',()=>{ refreshAcct(); refreshSyncRow(); refreshBackupRow(); $('#panel').classList.add('show'); });
   $('#pwBtn').addEventListener('click',async()=>{
     if(!sb||!session){ return; }
     const np=prompt('输入新密码（至少 6 位）');
@@ -810,6 +816,29 @@
   $('#panelBack').addEventListener('click',()=>$('#panel').classList.remove('show'));
   $('#exportBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const d=new Date(); a.href=url; a.download='wenqu-backup-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'.json'; a.click(); URL.revokeObjectURL(url); toast('已导出'); });
   $('#importBtn').addEventListener('click',()=>$('#importFile').click());
+  function refreshSyncRow(){ const row=$('#syncRow'); if(!session){ row.style.display='none'; return; } row.style.display='flex';
+    let s; if(lastSync.at===0) s=cloudReady?'已就绪，尚未推送过':'云端未就绪（启动时没拉到云端）';
+    else if(lastSync.ok) s='上次同步成功 '+fmtEn(lastSync.at);
+    else s=fmtEn(lastSync.at)+' '+lastSync.msg;
+    $('#syncDesc').textContent=s+'。本机 '+state.threads.length+' 条线索、'+state.entries.length+' 条片段'; }
+  // 手动同步:先拉云端→合并→推送,把每步结果直接显示出来
+  $('#syncBtn').addEventListener('click',async()=>{
+    if(!sb||!session){ toast('未登录'); return; }
+    $('#syncDesc').textContent='正在拉取云端…';
+    const cloud=await cloudPull();
+    if(cloud===null){ refreshSyncRow(); toast('拉取云端失败，原因见上方'); return; }
+    cloudReady=true; stashLocal();
+    const {merged,addedLocal}=mergeCloudLocal(cloud,state); state=merged; save0(); renderList();
+    $('#syncDesc').textContent='云端 '+cloud.threads.length+' 条线索，本机独有 '+addedLocal+' 条，正在推送…';
+    const ok=await cloudPush(true);
+    refreshSyncRow(); toast(ok?'同步完成':'推送失败，原因见上方'); });
+  function refreshBackupRow(){ const b=readBackup(); const row=$('#bkRow'); if(!b||!b.data||!(b.data.threads||[]).length){ row.style.display='none'; return; }
+    row.style.display='flex'; $('#bkDesc').textContent='云端覆盖前的本机数据，'+fmtEn(b.at)+' 存，'+b.data.threads.length+' 条线索。找回会与现有内容合并'; }
+  $('#bkBtn').addEventListener('click',async()=>{ const b=readBackup(); if(!b||!b.data) return;
+    if(!confirm('把这份本机备份合并进现有内容？同 id 的记录以现有为准，备份里多出来的补进来。')) return;
+    const {merged,addedLocal}=mergeCloudLocal(state,b.data); state=merged; save0(); renderList();
+    if(sb&&session){ cloudReady=true; await cloudPush(true); }
+    toast('已找回 '+addedLocal+' 条记录'); refreshBackupRow(); });
   $('#importFile').addEventListener('change',(e)=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!d.threads||!d.entries){ toast('格式不对'); return; } state=d; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已恢复'); }catch(err){ toast('读取失败'); } }; rd.readAsText(f); e.target.value=''; });
   $('#seedBtn').addEventListener('click',()=>{
     if(!confirm('载入两条示例线索（睡眠、番茄工作法），演示怎么记录多轮思考。它们会加到你现有内容里，看完可随时删掉。')) return;
@@ -880,7 +909,7 @@
         '建议先在设置里导出备份。拿不准就点取消（保留云端）。'
       );
       if(useLocal){ await cloudPush(true); toast('已用本机内容同步到云端'); }
-      else { state=cloud; save0(); toast('已载入云端内容'); }
+      else { stashLocal(); state=cloud; save0(); toast('已载入云端内容'); }
     } else if(cloudHas){
       state=cloud; save0(); toast('已同步');
     } else if(localHas){
@@ -891,6 +920,19 @@
     switchView('list');
   }
   function save0(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  // 任何"用云端替换本机"之前,先把本机现状存一份,可在设置里找回
+  const BKEY=KEY+'-backup';
+  function stashLocal(){ try{ if(state.threads.length||state.entries.length) localStorage.setItem(BKEY, JSON.stringify({at:Date.now(),data:state})); }catch(e){} }
+  function readBackup(){ try{ const r=localStorage.getItem(BKEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  // 合并:同 id 以云端为准,本机独有的记录补进去(不再静默丢弃)。返回 {merged, addedLocal}
+  function mergeCloudLocal(cloud, local){
+    let added=0;
+    const uni=(cl,lo)=>{ const ids=new Set(cl.map(x=>x.id)); const extra=lo.filter(x=>!ids.has(x.id)); added+=extra.length; return cl.concat(extra); };
+    const concepts=uni(cloud.concepts,local.concepts||[]);
+    const threads=uni(cloud.threads,local.threads||[]);
+    const entries=uni(cloud.entries,local.entries||[]);
+    return { merged:{concepts,threads,entries}, addedLocal:added };
+  }
 
   async function doLogout(){
     if(sb&&session){ await sb.auth.signOut(); }
@@ -933,10 +975,17 @@
         const cloud=await cloudPull();
         if(cloud!==null){
           cloudReady=true;
-          if(cloud.threads.length||cloud.concepts.length){ state=cloud; save0(); switchView('list'); }
+          if(cloud.threads.length||cloud.concepts.length){
+            stashLocal();
+            const {merged,addedLocal}=mergeCloudLocal(cloud,state);
+            state=merged; save0(); switchView('list');
+            if(addedLocal>0){ const ok=await cloudPush(true); toast(ok?'本机有 '+addedLocal+' 条云端没有的记录，已补到云端':'本机有未同步记录，推送云端失败'); }
+          }
           else if(state.threads.length){ await cloudPush(true); }
+        } else {
+          // cloudPull 失败(null)时不标记就绪:本地照常用,但不会覆盖云端;明确告诉用户
+          toast('连不上云端，本次修改只存在本机');
         }
-        // cloudPull 失败(null)时不标记就绪:本地照常用,但不会覆盖云端
       } else { showAuth(); }
     } else { showAuth(); authErr('云同步暂不可用，可先本地使用'); }
   })();
