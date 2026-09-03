@@ -76,7 +76,7 @@
   .dtop{padding:calc(var(--sat) + 40px) 28px 0;}
   .back{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--paper); cursor:pointer; display:inline-flex; align-items:center; gap:7px; margin-bottom:28px; background:var(--ink); border:none; padding:8px 14px;}
   .back:active{opacity:.8;}
-  .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text; outline:none; border-radius:2px;}
+  .dtitle{font-size:22px; font-weight:400; line-height:1.55; color:var(--ink); letter-spacing:.2px; cursor:text; outline:none; border-radius:2px; -webkit-user-select:text; user-select:text;}
   .dtitle:focus{box-shadow:0 1px 0 var(--line); }
   .dconcepts{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;}
   .dconcepts .cc{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); border:0.5px solid var(--line); padding:5px 11px; display:inline-flex; align-items:center; gap:7px;}
@@ -177,7 +177,7 @@
   .field{width:100%; font-family:inherit; font-size:16px; zoom:0.94; color:var(--ink); background:transparent; border:none; border-bottom:0.5px solid var(--line-strong,var(--line)); border-bottom-color:var(--line); padding:8px 0; margin-bottom:22px; resize:none; letter-spacing:.2px;}
   .field::placeholder{color:var(--ink-faint);}
   .field:focus{outline:none; border-bottom-color:var(--ink);}
-  textarea.field{min-height:80px; line-height:1.6;}
+  textarea.field{min-height:46px; line-height:1.6; overflow:hidden;}
   .field.err{border-bottom-color:#C0563A;}
 
   #sourceFields{border:0.5px solid var(--line); padding:16px 16px 4px; margin-bottom:22px; transition:opacity .2s;}
@@ -364,7 +364,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.4</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.7</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -697,11 +697,14 @@
 
   let segKind='iterate', editingEntryId=null;
   let pendingRound=null;  // 非null时,新片段进这一轮(用于'更新'开启新轮)
+  function growBody(){ const b=$('#sBody'); b.style.height='auto'; b.style.height=Math.max(46,b.scrollHeight)+'px'; }
+  $('#sBody').addEventListener('input',growBody);
   function openSeg(eid){
     editingEntryId = (typeof eid==='string') ? eid : null;
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
     else { segKind='iterate'; $('#sBody').value=''; $('#sSource').value=''; $('#sLink').value=''; }
-    $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); showSheet('#segSheet'); setTimeout(()=>$('#sBody').focus(),280);
+    growBody();
+    $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); showSheet('#segSheet'); setTimeout(()=>{ growBody(); $('#sBody').focus(); },280);
   }
   function updateSourceState(){ const on=segKind==='source'; $('#sourceFields').classList.toggle('dim',!on); $('#sSource').disabled=!on; $('#sLink').disabled=!on; $('#sourceHint').innerHTML=on?'Source · 来源':'Source · 来源（选“引申”时可填）'; }
   function renderKTabs(){ const box=$('#kTabs'); box.innerHTML=''; KINDS.forEach(k=>{ const b=document.createElement('button'); b.className='ktab'+(segKind===k.k?' on':''); b.innerHTML='<span class="kcn">'+k.cn+'</span>'; b.addEventListener('click',()=>{ segKind=k.k; updateSourceState(); renderKTabs(); }); box.appendChild(b); }); }
