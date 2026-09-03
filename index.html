@@ -124,6 +124,10 @@
   #galaxy{display:block; width:100%; height:58vh; max-height:480px;}
   .glxhint{font-size:11px; color:var(--ink-faint); text-align:center; margin:12px 28px 0; min-height:16px; letter-spacing:.5px;}
   .glxhint b{color:var(--ink-soft); font-weight:400;}
+  .concept-hint{font-size:11px; line-height:1.6; color:var(--ink-faint); margin:-14px 0 18px;}
+  .glx-edge{margin:8px 28px 0;}
+  .glx-edge-row{font-size:13px; line-height:1.5; color:var(--ink); padding:7px 0; cursor:pointer;}
+  .glx-edge-row::before{content:'·'; color:var(--ink-faint); margin-right:8px;}
   .glx-analyze{text-align:center; margin:32px 28px 0;}
   .glx-analyze button{font-family:'Noto Sans SC',sans-serif; font-size:13px; letter-spacing:2px; color:var(--paper); background:var(--ink); border:none; padding:13px 28px; cursor:pointer;}
   .glx-analyze button:disabled{opacity:.5; cursor:default;}
@@ -289,6 +293,7 @@
     <div id="galaxyView" style="display:none;">
       <div id="galaxyWrap"><svg id="galaxy" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
       <div class="glxhint" id="glxhint">拖动节点换位置，点一下看这个概念下有哪些线索</div>
+      <div class="glx-edge" id="glxEdge"></div>
       <div class="glx-analyze"><button id="analyzeBtn">✦ AI 脉络分析</button><div class="glx-analyze-note">让 AI 读一遍你的线索，发现内容里的隐藏关联、建议概念</div></div>
     </div>
   </main>
@@ -305,6 +310,7 @@
   <label>Concepts · 挂上概念（可多选）</label>
   <div class="chips" id="tConceptChips"></div>
   <input class="field" id="tNewConcept" type="text" placeholder="输入新概念名，回车添加" />
+  <div class="concept-hint">概念是这个问题所属的知识领域（如"行为经济学"），不是问题里出现的事物（如"存钱"）</div>
   <div class="sheet-foot">
     <button class="btn" id="tCancel">Cancel</button>
     <button class="btn primary" id="tSave">Create</button>
@@ -332,6 +338,7 @@
   <div class="sh-title">Concepts · 挂概念</div>
   <div class="chips" id="attachChips"></div>
   <input class="field" id="attachNew" type="text" placeholder="输入新概念名，回车添加" />
+  <div class="concept-hint">概念是这个问题所属的知识领域（如"行为经济学"），不是问题里出现的事物（如"存钱"）</div>
   <div class="sheet-foot"><button class="btn primary" id="attachDone">Done</button></div>
 </div>
 
@@ -367,7 +374,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.19</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -375,7 +382,20 @@
 <script>
 (function(){
   'use strict';
-  const KEY='wenqu-threads-v1';
+  // 本机存储按账号分区(2.17):每个账号一个命名空间,匿名一个;任何账号看不到别的账号留在本机的数据。
+  // 命名空间未确定(登录状态还没恢复)时 ns=null,什么都不读、不渲染。
+  const LEGACY_KEY='wenqu-threads-v1';
+  let ns=null;
+  function k(sfx){ if(!ns) throw new Error('namespace not ready'); return 'wenqu-'+ns+(sfx||''); }
+  function nsOf(sess){ return sess&&sess.user&&sess.user.id ? 'u-'+sess.user.id : 'anon'; }
+  function emptyState(){ return {concepts:[],threads:[],entries:[]}; }
+  // 旧版单一 key 的数据 → 归入匿名空间(登录后由用户明确选择是否并入账号);旧的同步基准/云端快照作废
+  (function migrateLegacy(){ try{
+    const r=localStorage.getItem(LEGACY_KEY); if(r===null) return;
+    if(localStorage.getItem('wenqu-anon')===null) localStorage.setItem('wenqu-anon', r);
+    const b=localStorage.getItem(LEGACY_KEY+'-backup'); if(b!==null && localStorage.getItem('wenqu-anon-backup')===null) localStorage.setItem('wenqu-anon-backup', b);
+    [LEGACY_KEY, LEGACY_KEY+'-backup', LEGACY_KEY+'-cloud-snapshot', LEGACY_KEY+'-synced'].forEach(x=>localStorage.removeItem(x));
+  }catch(e){} })();
   // ===== Supabase 云同步 =====
   const SB_URL='https://suizcgearwtxksywwnbx.supabase.co';
   const SB_KEY='sb_publishable_Po6OtdXBFR-ARLfrCq3q_A_YwCItkcF';
@@ -413,6 +433,7 @@
   // 写入守卫 cloudReady:只有云端状态已确认(拉取过或确认为空),才允许推送覆盖(声明在上方)
   async function cloudPush(force){
     if(!sb||!session) return false;
+    if(ns!==nsOf(session)){ lastSync={at:Date.now(),ok:false,msg:'本机空间与登录账号不一致，已拒绝推送'}; return false; }
     if(syncing){ pendingPush=true; return false; }
     // 守卫:云端尚未就绪时,禁止用当前 state 覆盖云端(防止空数据抹掉云端真实数据)
     if(!cloudReady && !force){ lastSync={at:Date.now(),ok:false,msg:'云端未就绪（启动时没拉到云端），本次未推送'}; return false; }
@@ -431,7 +452,7 @@
         p_thread_concepts: tc
       });
       if(error){ console.error('云同步失败：',error.message); lastSync={at:Date.now(),ok:false,msg:'推送失败：'+error.message}; if(!syncFailed) toast('云端同步失败，修改暂只在本机'); syncFailed=true; }
-      else { ok=true; syncFailed=false; lastSync={at:Date.now(),ok:true,msg:''}; }
+      else { ok=true; syncFailed=false; lastSync={at:Date.now(),ok:true,msg:''}; writeSynced(state); }
     }catch(err){ console.error('云同步异常：',err); lastSync={at:Date.now(),ok:false,msg:'推送异常：'+(err&&err.message||err)}; syncFailed=true; }
     syncing=false;
     if(pendingPush){ pendingPush=false; return cloudPush(force); }
@@ -492,7 +513,7 @@
     ]
   };
 
-  let state=load();
+  let state=emptyState();
 
   /* ═══════════════════════════════════════════════════════
      模块:STORAGE · 本地存储
@@ -506,9 +527,13 @@
     (s.threads||[]).forEach(t=>{ const v=m[norm(t.title)]; if(v&&v!==t.title){ t.title=v; n++; } });
     (s.entries||[]).forEach(e=>{ const v=m[norm(e.body)]; if(v&&v!==e.body){ e.body=v; n++; } });
     return n; }
-  function load(){ try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){} return JSON.parse(JSON.stringify(SEED)); }
+  function load(){ try{ const r=localStorage.getItem(k()); if(r) return JSON.parse(r); }catch(e){} return emptyState(); }
+  // 进入某个命名空间:卸掉内存里上一个账号的一切,再读这个空间的数据
+  function enterNamespace(id){ ns=id; state=load(); currentThread=null; view='list'; renderList(); }
+  // 离开(登出):内存清空,空间置空,页面上不再有任何内容
+  function leaveNamespace(){ ns=null; state=emptyState(); currentThread=null; cloudReady=false; $('#threadList').innerHTML=''; }
   let pushTimer=null;
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  function save(){ if(!ns) return; try{ localStorage.setItem(k(), JSON.stringify(state)); }catch(e){}
     if(sb&&session){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>{ cloudReady?cloudPush():ensureCloudReady(); },800); } }
   // 启动时没拉到云端 → 之后每次保存、回到前台都再试一次;成功即合并本机独有记录并推送
   let ensuring=false;
@@ -806,14 +831,16 @@
      模块:GRAPH · 脉络图
      力导向布局(tick) / 概念节点+共现连边 / 拖动与选中
      ═══════════════════════════════════════════════════════ */
-  function computeLinks(){ const set=new Set(),links=[]; state.threads.forEach(t=>{const cs=t.conceptIds; for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const key=[cs[i],cs[j]].sort().join('|'); if(!set.has(key)){set.add(key);links.push([cs[i],cs[j]]);}}}); return links; }
+  // 边 = 两个概念被同一条线索同时挂上。每条边记着是哪几条线索把它们连起来的(边可解释)
+  function computeLinks(){ const map=new Map(); state.threads.forEach(t=>{const cs=t.conceptIds||[]; for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const pair=[cs[i],cs[j]].sort(); const key=pair.join('|'); if(!map.has(key)) map.set(key,{key,a:pair[0],b:pair[1],threads:[]}); map.get(key).threads.push(t.id);}}); return [...map.values()]; }
+  let selectedLink=null;
   function threadCount(cid){ return state.threads.filter(t=>t.conceptIds.includes(cid)).length; }
   function startGalaxy(){ state.concepts.forEach(c=>{ if(c.x===undefined)c.x=200+(Math.random()-.5)*120; if(c.y===undefined)c.y=200+(Math.random()-.5)*120; vel[c.id]=vel[c.id]||{vx:0,vy:0}; }); alpha=1; if(!raf) tick(); renderGalaxy(); }
   function stopGalaxy(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
   function tick(){ const N=state.concepts, links=computeLinks();
     if(alpha>0.005){
       for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){ const a=N[i],b=N[j]; let dx=a.x-b.x,dy=a.y-b.y; let d2=dx*dx+dy*dy; if(d2<0.01)d2=0.01; const d=Math.sqrt(d2),f=1400/d2,fx=(dx/d)*f,fy=(dy/d)*f; vel[a.id].vx+=fx;vel[a.id].vy+=fy;vel[b.id].vx-=fx;vel[b.id].vy-=fy; }
-      links.forEach(l=>{ const a=concept(l[0]),b=concept(l[1]); if(!a||!b)return; let dx=b.x-a.x,dy=b.y-a.y; const d=Math.sqrt(dx*dx+dy*dy)||0.01,f=(d-90)*0.02,fx=(dx/d)*f,fy=(dy/d)*f; vel[a.id].vx+=fx;vel[a.id].vy+=fy;vel[b.id].vx-=fx;vel[b.id].vy-=fy; });
+      links.forEach(l=>{ const a=concept(l.a),b=concept(l.b); if(!a||!b)return; let dx=b.x-a.x,dy=b.y-a.y; const d=Math.sqrt(dx*dx+dy*dy)||0.01,f=(d-90)*0.02,fx=(dx/d)*f,fy=(dy/d)*f; vel[a.id].vx+=fx;vel[a.id].vy+=fy;vel[b.id].vx-=fx;vel[b.id].vy-=fy; });
       N.forEach(c=>{ vel[c.id].vx+=(200-c.x)*0.005; vel[c.id].vy+=(200-c.y)*0.005; });
       N.forEach(c=>{ if(c.id===dragId)return; vel[c.id].vx*=0.82; vel[c.id].vy*=0.82; c.x+=vel[c.id].vx*alpha; c.y+=vel[c.id].vy*alpha; c.x=Math.max(28,Math.min(372,c.x)); c.y=Math.max(28,Math.min(372,c.y)); });
       alpha*=0.985; renderGalaxy();
@@ -821,7 +848,10 @@
     raf=requestAnimationFrame(tick);
   }
   function renderGalaxy(){ const links=computeLinks(); let s=''; const ink=cssv('--ink'), faint=cssv('--ink-faint'), line=cssv('--line');
-    links.forEach(l=>{ const a=concept(l[0]),b=concept(l[1]); if(!a||!b)return; s+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+faint+'" stroke-width="0.5"/>'; });
+    links.forEach(l=>{ const a=concept(l.a),b=concept(l.b); if(!a||!b)return; const on=selectedLink===l.key; const w=Math.min(0.5+ (l.threads.length-1)*0.6, 2.5);
+      s+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+(on?ink:faint)+'" stroke-width="'+(on?w+0.8:w)+'"/>';
+      // 透明宽线:给手指一个可点的目标
+      s+='<line class="glink" data-key="'+l.key+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="transparent" stroke-width="16" style="cursor:pointer;"/>'; });
     state.concepts.forEach(c=>{ const cnt=threadCount(c.id); const r=5+cnt*2.5; const sel=selected===c.id;
       s+='<g class="gnode" data-id="'+c.id+'" style="cursor:grab;">';
       if(sel) s+='<circle cx="'+c.x+'" cy="'+c.y+'" r="'+(r+7)+'" fill="none" stroke="'+ink+'" stroke-width="0.5"/>';
@@ -830,13 +860,23 @@
       s+='</g>'; });
     svg.innerHTML=s;
     svg.querySelectorAll('.gnode').forEach(g=>{ g.addEventListener('pointerdown',(e)=>onDown(e,g.getAttribute('data-id'))); });
+    svg.querySelectorAll('.glink').forEach(g=>{ g.addEventListener('click',()=>selectLink(g.getAttribute('data-key'))); });
   }
   function svgPoint(e){ const r=svg.getBoundingClientRect(); return {x:((e.clientX-r.left)/r.width)*400,y:((e.clientY-r.top)/r.height)*400}; }
   let moved=false, downPt=null;
   function onDown(e,id){ e.preventDefault(); dragId=id; moved=false; downPt=svgPoint(e); alpha=Math.max(alpha,0.6); svg.setPointerCapture(e.pointerId); svg.addEventListener('pointermove',onMove); svg.addEventListener('pointerup',onUp); svg.addEventListener('pointercancel',onUp); }
   function onMove(e){ if(!dragId)return; const p=svgPoint(e),c=concept(dragId); if(!c)return; if(Math.abs(p.x-downPt.x)+Math.abs(p.y-downPt.y)>4)moved=true; c.x=Math.max(28,Math.min(372,p.x)); c.y=Math.max(28,Math.min(372,p.y)); vel[dragId]={vx:0,vy:0}; renderGalaxy(); }
   function onUp(){ const id=dragId; dragId=null; svg.removeEventListener('pointermove',onMove); svg.removeEventListener('pointerup',onUp); svg.removeEventListener('pointercancel',onUp); if(!moved&&id){ selectNode(id); } else { save(); } alpha=Math.max(alpha,0.3); }
-  function selectNode(id){ selected=selected===id?null:id; const c=concept(id); const cnt=threadCount(id); const hint=$('#glxhint');
+  // 点一条边:说明这两个概念为什么相连——由哪几条线索共同形成,点线索直接进去看
+  function selectLink(key){ selectedLink=selectedLink===key?null:key; selected=null; const hint=$('#glxhint'), box=$('#glxEdge');
+    if(!selectedLink){ hint.textContent='拖动节点换位置，点一下看这个概念下有哪些线索'; box.innerHTML=''; renderGalaxy(); return; }
+    const l=computeLinks().find(x=>x.key===key); if(!l){ selectedLink=null; box.innerHTML=''; return; }
+    const a=concept(l.a),b=concept(l.b);
+    hint.innerHTML='<b>'+esc(a.label)+'</b> ↔ <b>'+esc(b.label)+'</b> · 由 '+l.threads.length+' 条共同线索形成';
+    box.innerHTML=l.threads.map(tid=>{ const t=thread(tid); return t?'<div class="glx-edge-row" data-open="'+t.id+'">'+esc(t.title)+'</div>':''; }).join('');
+    box.querySelectorAll('[data-open]').forEach(r=>r.addEventListener('click',()=>openThread(r.getAttribute('data-open'))));
+    renderGalaxy(); }
+  function selectNode(id){ selected=selected===id?null:id; selectedLink=null; $('#glxEdge').innerHTML=''; const c=concept(id); const cnt=threadCount(id); const hint=$('#glxhint');
     if(selected){ const ts=state.threads.filter(t=>t.conceptIds.includes(id)); const titles=ts.slice(0,2).map(t=>t.title).join(' / '); hint.innerHTML='<b>'+esc(c.label)+'</b> · '+cnt+' 条线索'+(titles?' · '+esc(titles)+(ts.length>2?'…':''):''); }
     else { hint.textContent='拖动节点换位置，点一下看这个概念下有哪些线索'; } renderGalaxy(); }
 
@@ -882,16 +922,17 @@
     $('#syncDesc').textContent='正在拉取云端…';
     const cloud=await cloudPull();
     if(cloud===null){ refreshSyncRow(); toast('拉取云端失败，原因见上方'); return; }
-    cloudReady=true; stashLocal();
+    cloudReady=true; stashLocal(); stashCloud(cloud);
     const {merged,addedLocal}=mergeCloudLocal(cloud,state); state=merged; save0(); renderList();
-    $('#syncDesc').textContent='云端 '+cloud.threads.length+' 条线索，本机独有 '+addedLocal+' 条，正在推送…';
+    $('#syncDesc').textContent='云端 '+cloud.threads.length+' 条线索，本机未同步改动 '+addedLocal+' 处，正在推送…';
     const ok=await cloudPush(true);
     refreshSyncRow(); toast(ok?'同步完成':'推送失败，原因见上方'); });
-  function refreshBackupRow(){ const b=readBackup(); const row=$('#bkRow'); if(!b||!b.data||!(b.data.threads||[]).length){ row.style.display='none'; return; }
-    row.style.display='flex'; $('#bkDesc').textContent='云端覆盖前的本机数据，'+fmtEn(b.at)+' 存，'+b.data.threads.length+' 条线索。找回会与现有内容合并'; }
-  $('#bkBtn').addEventListener('click',async()=>{ const b=readBackup(); if(!b||!b.data) return;
+  function pickBackup(){ const a=readBackup(), c=readCloudSnapshot(); const list=[a&&{...a,src:'本机'},c&&{...c,src:'云端快照'}].filter(x=>x&&x.data&&(x.data.threads||[]).length); list.sort((x,y)=>(y.data.entries||[]).length-(x.data.entries||[]).length); return list[0]||null; }
+  function refreshBackupRow(){ const b=pickBackup(); const row=$('#bkRow'); if(!b){ row.style.display='none'; return; }
+    row.style.display='flex'; $('#bkDesc').textContent=b.src+'备份，'+fmtEn(b.at)+' 存，'+b.data.threads.length+' 条线索、'+(b.data.entries||[]).length+' 条片段。找回会与现有内容合并'; }
+  $('#bkBtn').addEventListener('click',async()=>{ const b=pickBackup(); if(!b) return;
     if(!confirm('把这份本机备份合并进现有内容？同 id 的记录以现有为准，备份里多出来的补进来。')) return;
-    const {merged,addedLocal}=mergeCloudLocal(state,b.data); state=merged; save0(); renderList();
+    const {merged,addedLocal}=mergeCloudLocal(state,b.data,null); state=merged; save0(); renderList();
     if(sb&&session){ cloudReady=true; await cloudPush(true); }
     toast('已找回 '+addedLocal+' 条记录'); refreshBackupRow(); });
   $('#importFile').addEventListener('change',(e)=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!d.threads||!d.entries){ toast('格式不对'); return; } state=d; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已恢复'); }catch(err){ toast('读取失败'); } }; rd.readAsText(f); e.target.value=''; });
@@ -950,54 +991,101 @@
   }
   async function afterFirstSignup(){
     hideAuth(); toast('账号已创建');
+    enterNamespace(nsOf(session));
     cloudReady=true;  // 新账号,云端确定为空,可安全推送
-    if(state.threads.length){ await cloudPush(true); }
+    await offerAnonImport();
     switchView('list');
   }
+  // 登录后,若匿名空间里有未登录时写的真实内容,问用户是否并入账号(默认不并入)
+  async function offerAnonImport(){
+    let anon=null; try{ const r=localStorage.getItem('wenqu-anon'); anon=r?JSON.parse(r):null; }catch(e){}
+    if(!anon) return;
+    const real=(anon.threads||[]).filter(t=>!isDemoThread(t));
+    if(!real.length) return;
+    const yes=confirm('本机有 '+real.length+' 条未登录时写的线索。\n\n要并入当前账号吗？\n\n点「确定」并入并同步到云端；点「取消」不并入，它们继续留在未登录模式里。');
+    if(!yes) return;
+    const keep=new Set(real.map(t=>t.id));
+    const part={concepts:anon.concepts||[], threads:real, entries:(anon.entries||[]).filter(e=>keep.has(e.threadId))};
+    const {merged}=mergeCloudLocal(state, part, null); state=merged; save0(); renderList();
+    localStorage.removeItem('wenqu-anon'); localStorage.removeItem('wenqu-anon-backup');
+    const ok=await cloudPush(true); toast(ok?'已并入并同步':'已并入本机，推送云端失败');
+  }
   async function afterLogin(){
+    enterNamespace(nsOf(session));
     hideAuth(); toast('已登录，正在同步…');
     const cloud=await cloudPull();
     if(cloud===null){ toast('同步失败，请检查网络'); switchView('list'); return; }
     cloudReady=true;
     const cloudHas = cloud.threads.length||cloud.concepts.length;
-    const localHas = state.threads.length||state.concepts.length;
-    if(cloudHas && localHas){
-      // 两边都有数据 → 冲突,让用户选,绝不静默覆盖(评审第5条:迁移陷阱)
-      const useLocal = confirm(
-        '本机和云端都有内容。\n\n' +
-        '· 点「确定」用【本机】内容覆盖云端（云端现有会被替换）\n' +
-        '· 点「取消」用【云端】内容覆盖本机（本机现有会被替换）\n\n' +
-        '建议先在设置里导出备份。拿不准就点取消（保留云端）。'
-      );
-      if(useLocal){ await cloudPush(true); toast('已用本机内容同步到云端'); }
-      else { stashLocal(); state=cloud; save0(); toast('已载入云端内容'); }
+    // 本机只有示例(全新安装时自动种的)不算"有内容",不能拿它去碰云端
+    const localReal = state.threads.filter(t=>!isDemoThread(t)).length>0;
+    if(cloudHas && localReal){
+      // 两边都有真实数据 → 合并(同 id 云端为准,本机独有补进去),不再让用户二选一覆盖。
+      // 2.15.20 事故:重装后本机只有示例,旧弹窗里"确定"=本机覆盖云端,一按云端就没了。
+      stashLocal(); stashCloud(cloud);
+      const {merged,addedLocal}=mergeCloudLocal(cloud,state); state=merged; save0();
+      if(addedLocal>0){ await cloudPush(true); toast('已合并：本机 '+addedLocal+' 处改动已同步到云端'); }
+      else { writeSynced(state); toast('已同步'); }
     } else if(cloudHas){
-      state=cloud; save0(); toast('已同步');
-    } else if(localHas){
+      state=cloud; save0(); writeSynced(state); renderList(); toast('已同步');
+    } else if(localReal){
+      // 云端空、本机有真实内容(先不登录写的,后来注册) → 本机推上去,示例不带
+      state.threads=state.threads.filter(t=>!isDemoThread(t)); const keep=new Set(state.threads.map(t=>t.id)); state.entries=state.entries.filter(e=>keep.has(e.threadId)); save0();
       await cloudPush(true); toast('已同步');
     } else {
       toast('已登录');
     }
+    await offerAnonImport();
     switchView('list');
   }
-  function save0(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function save0(){ if(!ns) return; try{ localStorage.setItem(k(), JSON.stringify(state)); }catch(e){} }
   // 任何"用云端替换本机"之前,先把本机现状存一份,可在设置里找回
-  const BKEY=KEY+'-backup';
-  function stashLocal(){ try{ if(state.threads.length||state.entries.length) localStorage.setItem(BKEY, JSON.stringify({at:Date.now(),data:state})); }catch(e){} }
-  function readBackup(){ try{ const r=localStorage.getItem(BKEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  function stashLocal(){ try{ if(state.threads.length||state.entries.length) localStorage.setItem(k('-backup'), JSON.stringify({at:Date.now(),data:state})); }catch(e){} }
+  // 每次拿到云端数据都留一份快照(设置页可找回),防止任何一次推送把云端刷坏
+  function stashCloud(cloud){ try{ if(cloud&&(cloud.threads.length||cloud.entries.length)) localStorage.setItem(k('-cloud-snapshot'), JSON.stringify({at:Date.now(),data:cloud})); }catch(e){} }
+  function readCloudSnapshot(){ try{ const r=localStorage.getItem(k('-cloud-snapshot')); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  function readBackup(){ try{ const r=localStorage.getItem(k('-backup')); return r?JSON.parse(r):null; }catch(e){ return null; } }
   // 合并:同 id 以云端为准,本机独有的记录补进去(不再静默丢弃)。返回 {merged, addedLocal}
-  function mergeCloudLocal(cloud, local){
-    let added=0;
-    const uni=(cl,lo)=>{ const ids=new Set(cl.map(x=>x.id)); const extra=lo.filter(x=>!ids.has(x.id)); added+=extra.length; return cl.concat(extra); };
-    const concepts=uni(cloud.concepts,local.concepts||[]);
-    const threads=uni(cloud.threads,local.threads||[]);
-    const entries=uni(cloud.entries,local.entries||[]);
-    return { merged:{concepts,threads,entries}, addedLocal:added };
+  // 三方合并(2.16):基准 = 上次同步成功时的本机快照(k('-synced'))。
+  //  - 本机相对基准【新增】的 → 补进云端(本机写的还没推上去)
+  //  - 本机相对基准【删除】的 → 从云端删掉(本机删的还没推上去)——删除是永久的,不会复活
+  //  - 本机相对基准【改过】的 → 以本机为准(本机改的还没推上去)
+  //  - 其余一律以云端为准(别的设备的改动/删除都生效)
+  // 没有基准(第一次)时退化为:云端为准 + 本机独有的补进去。
+  function writeSynced(s){ try{ localStorage.setItem(k('-synced'), JSON.stringify(s)); }catch(e){} }
+  function readSynced(){ try{ const r=localStorage.getItem(k('-synced')); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  function mergeCloudLocal(cloud, local, base){
+    if(base===undefined) base=readSynced();
+    let added=0, removed=0, changed=0;
+    const one=(cl,lo,ba)=>{
+      const L=new Map(lo.map(x=>[x.id,x])), B=ba?new Map(ba.map(x=>[x.id,x])):null;
+      let out=[];
+      cl.forEach(c=>{
+        const l=L.get(c.id);
+        if(B){
+          const b=B.get(c.id);
+          if(b && !l){ removed++; return; }                                   // 本机删了 → 不要
+          if(l && b && JSON.stringify(l)!==JSON.stringify(b)){ changed++; out.push(l); return; } // 本机改了 → 本机版
+        }
+        out.push(c);
+      });
+      const C=new Set(cl.map(x=>x.id));
+      lo.forEach(l=>{ if(C.has(l.id)) return; if(B && B.has(l.id)) return; /* 基准里有、云端没有 = 别的设备删了 */ added++; out.push(l); });
+      return out;
+    };
+    const concepts=one(cloud.concepts,local.concepts||[],base&&base.concepts);
+    const threads=one(cloud.threads,local.threads||[],base&&base.threads);
+    const entries=one(cloud.entries,local.entries||[],base&&base.entries);
+    // 挂在已不存在的线索/概念上的记录清掉
+    const tids=new Set(threads.map(t=>t.id)), cids=new Set(concepts.map(c=>c.id));
+    const entries2=entries.filter(e=>tids.has(e.threadId));
+    threads.forEach(t=>t.conceptIds=(t.conceptIds||[]).filter(x=>cids.has(x)));
+    return { merged:{concepts,threads,entries:entries2}, addedLocal:added+removed+changed };
   }
 
   async function doLogout(){
     if(sb&&session){ await sb.auth.signOut(); }
-    session=null; cloudReady=false; $('#panel').classList.remove('show'); showAuth();
+    session=null; leaveNamespace(); $('#panel').classList.remove('show'); showAuth();
     $('#authEmail').value=''; $('#authPass').value=''; authErr('');
   }
 
@@ -1012,7 +1100,7 @@
     if(error){ authErr(error.message); return; }
     authErr('重置邮件已发到 '+email+'，查收后按链接改密码');
   });
-  $('#authSkip').addEventListener('click',()=>{ hideAuth(); switchView('list'); });
+  $('#authSkip').addEventListener('click',()=>{ hideAuth(); enterNamespace('anon'); if(!state.threads.length&&!localStorage.getItem('wenqu-anon-seeded')){ state=JSON.parse(JSON.stringify(SEED)); save0(); localStorage.setItem('wenqu-anon-seeded','1'); } switchView('list'); });
   $('#authPass').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSignin(); });
 
 
@@ -1028,21 +1116,22 @@
 
   $('#fabWrap').style.display='block';
   (async function boot(){
-    renderList();
+    // 登录状态没恢复之前不读任何本机数据、不渲染,避免闪现上一个账号的内容
     if(sb){
       const {data}=await sb.auth.getSession();
       if(data && data.session){
-        session=data.session; hideAuth();
+        session=data.session; hideAuth(); enterNamespace(nsOf(session));
         const cloud=await cloudPull();
         if(cloud!==null){
           cloudReady=true;
           if(cloud.threads.length||cloud.concepts.length){
-            stashLocal();
+            stashLocal(); stashCloud(cloud);
             const {merged,addedLocal}=mergeCloudLocal(cloud,state);
             state=merged; save0(); switchView('list');
-            if(addedLocal>0){ const ok=await cloudPush(true); toast(ok?'本机有 '+addedLocal+' 条云端没有的记录，已补到云端':'本机有未同步记录，推送云端失败'); }
+            if(addedLocal>0){ const ok=await cloudPush(true); toast(ok?'本机 '+addedLocal+' 处未同步改动已推到云端':'本机有未同步改动，推送云端失败'); } else writeSynced(state);
           }
           else if(state.threads.length){ await cloudPush(true); }
+          await offerAnonImport();
         } else {
           // cloudPull 失败(null)时不标记就绪:本地照常用,但不会覆盖云端;明确告诉用户
           toast('连不上云端，本次修改只存在本机');
