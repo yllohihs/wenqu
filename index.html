@@ -62,6 +62,7 @@
   .thread .num{font-family:'Inter',sans-serif; font-size:11px; color:var(--ink-faint); letter-spacing:1px; padding-top:3px; min-width:22px;}
   .thread .col{flex:1; min-width:0;}
   .thread .ttitle{font-size:15px; font-weight:400; line-height:1.6; color:var(--ink); letter-spacing:.2px;}
+  .demo-tag{display:inline-block; font-size:10px; letter-spacing:1.5px; color:var(--ink-faint); border:0.5px solid var(--line); padding:1px 5px; margin-right:8px; vertical-align:2px; line-height:1.5;}
   .thread .tmeta{display:flex; align-items:center; gap:10px; margin-top:12px;}
   .thread .tconcepts{font-size:11px; letter-spacing:.5px; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .thread .tstage{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-faint); margin-left:auto; white-space:nowrap;}
@@ -363,7 +364,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.8</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.2</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -444,10 +445,13 @@
   const kInfo=(k)=>KINDS.find(x=>x.k===k)||KINDS[0];
 
   const SEED={
-    concepts:[{id:'c_sleep',label:'睡眠',x:150,y:150},{id:'c_habit',label:'习惯',x:250,y:180},{id:'c_focus',label:'专注力',x:180,y:260}],
+    concepts:[{id:'c_sleepsci',label:'睡眠科学',x:150,y:150},{id:'c_chrono',label:'时间生物学',x:250,y:180},{id:'c_behecon',label:'行为经济学',x:180,y:260},{id:'c_psy',label:'心理学',x:280,y:280},{id:'c_socpsy',label:'社会心理学',x:340,y:200},{id:'c_design',label:'设计学',x:120,y:340},{id:'c_vision',label:'视觉感知',x:220,y:380},{id:'c_aesth',label:'美学',x:320,y:360},{id:'c_visart',label:'视觉艺术',x:380,y:300}],
     threads:[
-      {id:'t1',title:'为什么熬夜之后，反而更难入睡？',conceptIds:['c_sleep','c_habit'],createdAt:Date.now()-86400000*10},
-      {id:'t2',title:'番茄工作法真的能提升专注力吗？',conceptIds:['c_focus','c_habit'],createdAt:Date.now()-86400000*4}
+      {id:'t1',title:'为什么熬夜之后，反而更难入睡？',conceptIds:['c_sleepsci','c_chrono'],createdAt:Date.now()-86400000*10},
+      {id:'t2',title:'攒钱为什么这么难？',conceptIds:['c_behecon','c_psy'],createdAt:Date.now()-86400000*6},
+      {id:'t3',title:'为什么被夸了反而不自在？',conceptIds:['c_socpsy','c_psy'],createdAt:Date.now()-86400000*14},
+      {id:'t4',title:'为什么留白多的设计看起来更“贵”？',conceptIds:['c_design','c_vision'],createdAt:Date.now()-86400000*8},
+      {id:'t5',title:'为什么黑白照片比彩色更有情绪？',conceptIds:['c_aesth','c_visart','c_vision'],createdAt:Date.now()-86400000*5}
     ],
     entries:[
       {id:'e1',threadId:'t1',kind:'ask',body:'越累应该越好睡才对，但熬夜到凌晨反而躺下睡不着，脑子异常清醒。为什么？',link:'',source:'',createdAt:Date.now()-86400000*10},
@@ -457,11 +461,31 @@
       {id:'e5',threadId:'t1',round:2,kind:'ask',body:'两周后冒出个新疑问：既然生物钟这么关键，那“固定起床”和“固定睡觉”，哪个才是稳住生物钟的锚点？',link:'',source:'',createdAt:Date.now()-86400000*2,occurredAt:Date.now()-86400000*2},
       {id:'e5b',threadId:'t1',round:2,kind:'source',body:'查到：光照是生物钟最强的校准信号，而起床后见光的时间最稳定、最可控。所以起床时间比睡觉时间更适合当锚点。',link:'',source:'Huberman Lab · 晨间光照与昼夜节律',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
       {id:'e5c',threadId:'t1',round:2,kind:'conclude',body:'修正第一轮的结论：与其纠结几点睡，不如固定起床时间+起床后尽快见光。锚住起点，睡意会自己回到该来的时段。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
-      {id:'e6',threadId:'t2',kind:'ask',body:'25分钟工作+5分钟休息，这个节奏为什么被认为有效？还是只是心理安慰？',link:'',source:'',createdAt:Date.now()-86400000*4},
-      {id:'e7',threadId:'t2',kind:'conclude',body:'关键不在25这个数字，而在于“给自己一个明确的、短到不抗拒的开始”，降低了启动的心理门槛。休息则防止注意力枯竭。',link:'',source:'',createdAt:Date.now()-86400000*3},
-      {id:'e8',threadId:'t2',round:2,kind:'ask',body:'用了一个月，发现有时25分钟到了正进入状态，被迫休息反而打断心流。那固定时长是不是有问题？',link:'',source:'',createdAt:Date.now()-86400000*2,occurredAt:Date.now()-86400000*2},
-      {id:'e9',threadId:'t2',round:2,kind:'iterate',body:'试了“到点了但状态好就继续”的弹性做法，效果更好。番茄钟的价值在“启动”，不在“严格计时”。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
-      {id:'e10',threadId:'t2',round:2,kind:'conclude',body:'把番茄钟当“起步器”而非“节拍器”：用它跨过启动门槛，一旦进入心流就让它自然延续，别被闹钟打断。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1}
+      {id:'e6',threadId:'t2',kind:'ask',body:'每个月都想着存点钱，到月底一看又没剩多少。明明没买什么大件，钱去哪了？是自制力太差吗？',link:'',source:'',createdAt:Date.now()-86400000*6},
+      {id:'e7',threadId:'t2',kind:'source',body:'行为经济学里的“心理账户”：人会把钱分进不同账户——工资是“辛苦钱”舍不得花，奖金、退款、红包是“意外之财”，花起来毫不心疼。钱往往就是从这些“不算钱”的账户里漏掉的。',link:'',source:'Richard Thaler，《Misbehaving》',createdAt:Date.now()-86400000*5},
+      {id:'e8',threadId:'t2',kind:'iterate',body:'那把所有钱都当“辛苦钱”不就行了？试了一周，发现做不到——每笔小额消费在当下都显得合理。问题可能不在每一笔的判断，而在于“存”永远排在“花”之后，剩多少存多少。',link:'',source:'',createdAt:Date.now()-86400000*4},
+      {id:'e9',threadId:'t2',kind:'conclude',body:'攒钱难不是自制力差，是顺序错了：先花后存，存下的永远是余数。要存下钱，得让“存”发生在“花”之前。',link:'',source:'',createdAt:Date.now()-86400000*4},
+      {id:'e10',threadId:'t2',round:2,kind:'ask',body:'工资一到账就自动转走一部分，两个月了确实存下来了。但冒出个新问题：有时月底不够用，又把存的取出来补，等于白存。这个漏洞怎么堵？',link:'',source:'',createdAt:Date.now()-86400000*2,occurredAt:Date.now()-86400000*2},
+      {id:'e11',threadId:'t2',round:2,kind:'source',body:'“先付给自己”之外还要加一层“摩擦”：把存的钱放进取用不便的地方（定期、另一家银行的账户），取出来要多几步、等几天。摩擦防的不是别人，是月底那个想反悔的自己。',link:'',source:'James Clear，《Atomic Habits》· 让坏习惯变难',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e12',threadId:'t2',round:2,kind:'conclude',body:'修正第一轮的结论：不只是“先存后花”，还要“存进去不好拿出来”。攒钱靠的是两步设计——自动化解决顺序，摩擦解决反悔——而不是靠每天跟自己较劲。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e13',threadId:'t3',kind:'ask',body:'同事当面夸我方案做得好，我第一反应是“没有没有，运气好”，然后一整天都有点别扭。明明是好事，为什么会不自在？',link:'',source:'',createdAt:Date.now()-86400000*14},
+      {id:'e14',threadId:'t3',kind:'source',body:'社会心理学的“自我验证理论”：人更愿意接受和自我认知一致的评价。如果心里觉得自己“还不够好”，一句夸奖就和自我认知冲突，会被当成威胁来处理。',link:'',source:'William Swann，Self-verification theory',createdAt:Date.now()-86400000*13},
+      {id:'e15',threadId:'t3',kind:'iterate',body:'但我也不是完全不自信。再想想，别扭更多来自“被看见”——被夸意味着被注视、被期待，下次得维持这个水准。不自在的也许不是评价本身，是评价带来的曝光。',link:'',source:'',createdAt:Date.now()-86400000*12},
+      {id:'e16',threadId:'t3',kind:'conclude',body:'被夸不自在，一半是评价和自我认知不匹配，一半是被看见带来的压力。两者都不是“我不配”，而是大脑在处理突如其来的注视。',link:'',source:'',createdAt:Date.now()-86400000*12},
+      {id:'e17',threadId:'t3',round:2,kind:'ask',body:'试了一个月“被夸只说谢谢，不否认”。别人并没有因此觉得我自大，对话反而更顺了。那之前的否认，到底是在保护谁？',link:'',source:'',createdAt:Date.now()-86400000*3,occurredAt:Date.now()-86400000*3},
+      {id:'e18',threadId:'t3',round:2,kind:'conclude',body:'否认夸奖表面是谦虚，实际是替对方把话收回去，切断了连接。“谢谢”不是接受评价，是接受对方的善意。',link:'',source:'',createdAt:Date.now()-86400000*3,occurredAt:Date.now()-86400000*3},
+      {id:'e19',threadId:'t4',kind:'ask',body:'奢侈品官网大片空白、几个字；打折超市的传单塞得满满当当。同样是传递信息，留白多就显得贵，这是为什么？',link:'',source:'',createdAt:Date.now()-86400000*8},
+      {id:'e20',threadId:'t4',kind:'source',body:'视觉感知里的“处理流畅度”：元素少、间距大，眼睛处理起来省力，这种省力感会被误读成对内容的好感和“品质高”。',link:'',source:'Reber & Schwarz，Processing fluency and aesthetic pleasure',createdAt:Date.now()-86400000*7},
+      {id:'e21',threadId:'t4',kind:'iterate',body:'还有一层是信号：那块空间本来可以放广告、放更多商品，舍得空着，等于在说“我不需要拼命卖”。留白是一种看得见的浪费，而浪费本身在传递身份。',link:'',source:'Veblen，《有闲阶级论》',createdAt:Date.now()-86400000*6},
+      {id:'e22',threadId:'t4',kind:'conclude',body:'留白显贵有两个机制：感知上省力被当成品质，社会意义上“舍得浪费空间”是身份信号。',link:'',source:'',createdAt:Date.now()-86400000*6},
+      {id:'e23',threadId:'t4',round:2,kind:'ask',body:'给自己的作品集加了大量留白，反馈却是“空、没内容”。留白显贵是不是有前提？',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e24',threadId:'t4',round:2,kind:'conclude',body:'留白是放大器，不是滤镜——它把仅剩的元素放大；元素本身站不住，放大出来的就是“没东西”。先有一个足够强的主体，留白才成立。',link:'',source:'',createdAt:Date.now()-86400000*1,occurredAt:Date.now()-86400000*1},
+      {id:'e25',threadId:'t5',kind:'ask',body:'同一张照片转成黑白，好像立刻多了点什么——更沉、更有故事。颜色明明是信息，去掉信息反而更动人？',link:'',source:'',createdAt:Date.now()-86400000*5},
+      {id:'e26',threadId:'t5',kind:'source',body:'去掉颜色后，视觉只剩明暗、形状、质感和构图。大脑不再被色彩牵走，会更专注地读光线和表情。减法让注意力集中。',link:'',source:'视觉注意与色彩显著性相关研究',createdAt:Date.now()-86400000*4},
+      {id:'e27',threadId:'t5',kind:'iterate',body:'但也可能是文化联想：几十年的新闻照片、老电影都是黑白的，黑白早已和“过去”“严肃”“纪实”绑在一起。情绪也许不来自照片，而来自我们对黑白的记忆。',link:'',source:'',createdAt:Date.now()-86400000*3},
+      {id:'e28',threadId:'t5',kind:'conclude',body:'黑白更有情绪，一半是感知上的减法（注意力集中在光和形），一半是文化上的加法（黑白自带“时间感”和“真实感”）。',link:'',source:'',createdAt:Date.now()-86400000*3},
+      {id:'e29',threadId:'t5',round:2,kind:'ask',body:'可是把一张色彩本身是主角的照片（晚霞、市集）转成黑白，反而变平了。黑白不是万能的？',link:'',source:'',createdAt:Date.now(),occurredAt:Date.now()},
+      {id:'e30',threadId:'t5',round:2,kind:'conclude',body:'黑白只放大光影和结构，不放大色彩。如果照片的情绪本来就住在颜色里，去色等于把主角赶下台。选黑白之前先问：这张照片的情绪住在哪里？',link:'',source:'',createdAt:Date.now(),occurredAt:Date.now()}
     ]
   };
 
@@ -474,6 +498,7 @@
   // 老版本载入的示例线索标点是英文的,启动时按文本匹配换成当前 SEED 的中文标点版本
   const _seedFix=(()=>{ const m={}; const norm=(s)=>(s||'').replace(/[，,]/g,',').replace(/[？?]/g,'?').replace(/[：:]/g,':').replace(/[“”"]/g,'"').replace(/[（(]/g,'(').replace(/[）)]/g,')').replace(/\s+/g,'');
     SEED.threads.forEach(t=>m[norm(t.title)]=t.title); SEED.entries.forEach(e=>m[norm(e.body)]=e.body); return {m,norm}; })();
+  const isDemoThread=(t)=>{ const {m,norm}=_seedFix; return !!m[norm(t.title)] && SEED.threads.some(x=>x.title===m[norm(t.title)]); };
   function fixSeedPunct(s){ let n=0; const {m,norm}=_seedFix;
     (s.threads||[]).forEach(t=>{ const v=m[norm(t.title)]; if(v&&v!==t.title){ t.title=v; n++; } });
     (s.entries||[]).forEach(e=>{ const v=m[norm(e.body)]; if(v&&v!==e.body){ e.body=v; n++; } });
@@ -561,7 +586,7 @@
       const cs=t.conceptIds.map(id=>{const c=concept(id);return c?c.label:'';}).filter(Boolean).join(', ');
       const card=document.createElement('div'); card.className='thread'+(selectMode?' selectable':'')+(selectedIds[t.id]?' selected':'');
       const check=selectMode?'<div class="tcheck">'+(selectedIds[t.id]?'✓':'')+'</div>':'';
-      card.innerHTML=check+'<div class="num">'+pad(seq[t.id])+'</div><div class="col"><div class="ttitle">'+esc(t.title)+'</div>'+
+      card.innerHTML=check+'<div class="num">'+pad(seq[t.id])+'</div><div class="col"><div class="ttitle">'+(isDemoThread(t)?'<span class="demo-tag">示例</span>':'')+esc(t.title)+'</div>'+
         (selectMode ? '' : '<div class="tmeta">'+(cs?'<span class="tconcepts">'+esc(cs)+'</span>':'')+'<span class="tstage">'+esc(stageOf(t))+'</span></div>')+'</div>';
       card.addEventListener('click',()=>{
         if(selectMode){ selectedIds[t.id]=!selectedIds[t.id]; if(!selectedIds[t.id])delete selectedIds[t.id]; renderList(); }
@@ -864,8 +889,14 @@
     toast('已找回 '+addedLocal+' 条记录'); refreshBackupRow(); });
   $('#importFile').addEventListener('change',(e)=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!d.threads||!d.entries){ toast('格式不对'); return; } state=d; save(); switchView('list'); $('#panel').classList.remove('show'); toast('已恢复'); }catch(err){ toast('读取失败'); } }; rd.readAsText(f); e.target.value=''; });
   $('#seedBtn').addEventListener('click',()=>{
-    if(!confirm('载入两条示例线索（睡眠、番茄工作法），演示怎么记录多轮思考。它们会加到你现有内容里，看完可随时删掉。')) return;
+    if(!confirm('载入示例线索（睡眠、攒钱、被夸、留白、黑白照片），演示怎么记录多轮思考。它们会加到你现有内容里，看完可随时删掉。')) return;
     const fresh=JSON.parse(JSON.stringify(SEED));
+    // 已有的示例(按标题)不重复载入;概念按名字复用现有的
+    const have=new Set(state.threads.map(t=>t.title)); fresh.threads=fresh.threads.filter(t=>!have.has(t.title));
+    const keepT=new Set(fresh.threads.map(t=>t.id)); fresh.entries=fresh.entries.filter(e=>keepT.has(e.threadId));
+    if(!fresh.threads.length){ toast('示例都已经在了'); return; }
+    const byLabel={}; state.concepts.forEach(c=>byLabel[c.label]=c.id);
+    fresh.concepts=fresh.concepts.filter(c=>{ if(byLabel[c.label]){ fresh.threads.forEach(t=>t.conceptIds=t.conceptIds.map(x=>x===c.id?byLabel[c.label]:x)); return false; } return true; });
     // 重映射 id,避免和现有数据冲突
     const cidMap={}, tidMap={};
     fresh.concepts.forEach(c=>{ const nid='c_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); cidMap[c.id]=nid; c.id=nid; });
