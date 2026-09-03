@@ -211,7 +211,7 @@
   .p-row>div:first-child{min-width:0; flex:1;}
   .p-row .l{font-size:14px; letter-spacing:.3px;}
   .p-row .d{font-size:11px; color:var(--ink-faint); margin-top:3px; letter-spacing:.2px;}
-  .p-row button{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-indent:1.5px; text-transform:uppercase; padding:9px 16px; cursor:pointer; border:1px solid var(--line); background:none; color:var(--ink); white-space:nowrap; flex:0 0 auto;}
+  .p-row button{font-family:'Noto Sans SC',sans-serif; font-size:11px; letter-spacing:1px; text-indent:1px; min-width:76px; height:34px; padding:0 12px; cursor:pointer; border:1px solid var(--line); background:none; color:var(--ink); white-space:nowrap; flex:0 0 auto;}
   .p-row button.warn{color:#C0563A; border-color:rgba(192,86,58,.4);}
   .p-note{font-size:12px; color:var(--ink-faint); line-height:1.9; margin-top:40px; letter-spacing:.3px;}
   .p-note b{color:var(--ink-soft); font-weight:400;}
@@ -357,13 +357,13 @@
 <div class="panel" id="panel">
   <div class="p-head"><button id="panelBack">← Back</button><h2>Settings · 设置</h2></div>
   <div class="p-row"><div><div class="l" id="acctLabel">未登录</div><div class="d" id="acctDesc">登录后数据云端同步，换设备不丢</div></div><button id="acctBtn">登录</button></div>
-  <div class="p-row" id="syncRow" style="display:none;"><div><div class="l">云同步状态</div><div class="d" id="syncDesc"></div></div><button id="syncBtn">立即同步</button></div>
+  <div class="p-row" id="syncRow" style="display:none;"><div><div class="l">云同步状态</div><div class="d" id="syncDesc"></div></div><button id="syncBtn">同步</button></div>
   <div class="p-row" id="pwRow" style="display:none;"><div><div class="l">修改密码</div><div class="d">改一个新的登录密码</div></div><button id="pwBtn">修改</button></div>
-  <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件，再多一重保险</div></div><button id="exportBtn">Export</button></div>
+  <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件，再多一重保险</div></div><button id="exportBtn">导出</button></div>
+  <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
-  <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">Import</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.3</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.4</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -471,6 +471,13 @@
      模块:STORAGE · 本地存储
      load/save 读写 localStorage / save0 只写本地不触发云推 / SEED 示例数据
      ═══════════════════════════════════════════════════════ */
+  // 老版本载入的示例线索标点是英文的,启动时按文本匹配换成当前 SEED 的中文标点版本
+  const _seedFix=(()=>{ const m={}; const norm=(s)=>(s||'').replace(/[，,]/g,',').replace(/[？?]/g,'?').replace(/[：:]/g,':').replace(/[“”"]/g,'"').replace(/[（(]/g,'(').replace(/[）)]/g,')').replace(/\s+/g,'');
+    SEED.threads.forEach(t=>m[norm(t.title)]=t.title); SEED.entries.forEach(e=>m[norm(e.body)]=e.body); return {m,norm}; })();
+  function fixSeedPunct(s){ let n=0; const {m,norm}=_seedFix;
+    (s.threads||[]).forEach(t=>{ const v=m[norm(t.title)]; if(v&&v!==t.title){ t.title=v; n++; } });
+    (s.entries||[]).forEach(e=>{ const v=m[norm(e.body)]; if(v&&v!==e.body){ e.body=v; n++; } });
+    return n; }
   function load(){ try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){} return JSON.parse(JSON.stringify(SEED)); }
   let pushTimer=null;
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
@@ -523,6 +530,7 @@
 
   let selectMode=false, selectedIds={};
   function renderList(){
+    if(fixSeedPunct(state)>0) save();
     const el=$('#threadList'); el.innerHTML='';
     $('#listView').classList.toggle('selecting', selectMode);
     $('#selectFoot').style.display = selectMode ? 'flex' : 'none';
