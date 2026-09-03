@@ -204,9 +204,9 @@
 
   .panel{position:fixed; inset:0; z-index:60; background:var(--paper); padding:calc(var(--sat) + 40px) 28px calc(var(--sab) + 24px); max-width:600px; margin:0 auto; overflow-y:auto; transform:translateX(100%); transition:transform .25s ease;}
   .panel.show{transform:none;}
-  .panel .p-head{display:flex; align-items:center; gap:14px; margin-bottom:28px;}
-  .panel .p-head button{background:none;border:none;color:var(--ink);font-size:18px;cursor:pointer;padding:0; font-family:'Inter',sans-serif;}
-  .panel h2{font-family:'Inter',sans-serif; font-weight:400; font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:0; color:var(--ink-faint);}
+  .panel .p-head{display:flex; align-items:center; gap:16px; margin-bottom:28px; height:24px;}
+  .panel .p-head button{display:inline-flex; align-items:center; gap:8px; height:24px; background:none; border:none; color:var(--ink); font-size:15px; letter-spacing:1px; line-height:1; cursor:pointer; padding:0; font-family:'Inter',sans-serif;}
+  .panel h2{font-family:'Inter',sans-serif; font-weight:400; font-size:11px; letter-spacing:3px; text-transform:uppercase; margin:0; color:var(--ink-faint); line-height:1; display:flex; align-items:center; height:24px;}
   .p-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 0; border-bottom:0.5px solid var(--line-soft);}
   .p-row>div:first-child{min-width:0; flex:1;}
   .p-row .l{font-size:14px; letter-spacing:.3px;}
@@ -355,7 +355,7 @@
 </div>
 
 <div class="panel" id="panel">
-  <div class="p-head"><button id="panelBack">← Back</button><h2>Settings · 设置</h2></div>
+  <div class="p-head"><button id="panelBack"><span>←</span><span>Back</span></button><h2>Settings · 设置</h2></div>
   <div class="p-row"><div><div class="l" id="acctLabel">未登录</div><div class="d" id="acctDesc">登录后数据云端同步，换设备不丢</div></div><button id="acctBtn">登录</button></div>
   <div class="p-row" id="pwRow" style="display:none;"><div><div class="l">修改密码</div><div class="d">改一个新的登录密码</div></div><button id="pwBtn">修改</button></div>
   <div class="p-row"><div><div class="l">导出备份</div><div class="d">存成文件，再多一重保险</div></div><button id="exportBtn">导出</button></div>
@@ -363,7 +363,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.5</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.14.7</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
