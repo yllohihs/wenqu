@@ -131,14 +131,14 @@
   .az-notice{font-size:13px; line-height:1.7; color:var(--ink); margin-bottom:20px;}
   .az-notice p{margin:0 0 10px;}
   .az-notice .az-dim{font-size:12px; color:var(--ink-soft); line-height:1.9;}
-  .az-range{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  .az-range{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
   .az-range button{font-size:12px; letter-spacing:.5px; padding:6px 12px; border:0.5px solid var(--line); color:var(--ink-soft); background:none; cursor:pointer; font-family:inherit;}
   .az-range button.on{background:var(--ink); color:var(--paper); border-color:var(--ink);}
   .az-pick-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
   .az-pick-head span{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-faint);}
   .az-pick-head button{font-size:11px; color:var(--ink-soft); background:none; border:none; cursor:pointer; letter-spacing:.3px;}
   .az-list{max-height:34vh; overflow-y:auto; margin-bottom:18px;}
-  .az-item{display:flex; align-items:flex-start; gap:10px; padding:9px 0; cursor:pointer; border-bottom:0.5px solid var(--line-soft);}
+  .az-item{display:flex; align-items:flex-start; gap:10px; padding:8px 0; cursor:pointer;}
   .az-item input{margin-top:3px; flex-shrink:0; accent-color:var(--ink);}
   .az-item span{font-size:14px; line-height:1.5; color:var(--ink);}
   .analyze-body{font-size:14px; line-height:1.8; color:var(--ink); white-space:pre-wrap; word-break:break-word; max-height:60vh; overflow-y:auto; letter-spacing:.2px; margin-bottom:8px;}
@@ -342,8 +342,8 @@
       <p>分析会把你<b>选中线索</b>的标题、概念和片段内容，发送给 <b>Claude(Anthropic)</b> 分析，找出隐藏关联、建议概念。</p>
       <p class="az-dim">· 只发送你下面勾选的线索，可自己选范围<br>· 分析结果仅显示给你，<b>不会保存</b>到云端<br>· 每月限 2 次</p>
     </div>
-    <div class="az-range" id="azRange"><button data-range="all">全部</button><button data-range="month">本月</button><button data-range="3m">三个月</button><button data-range="6m">半年</button></div>
     <div class="az-pick-head"><span>选择要分析的线索</span><span id="azCount"></span></div>
+    <div class="az-range" id="azRange"><button data-range="all">全部</button><button data-range="month">本月</button><button data-range="3m">三个月</button><button data-range="6m">半年</button></div>
     <div class="az-list" id="azList"></div>
     <div class="sheet-foot">
       <button class="btn" id="azCancel">取消</button>
@@ -366,7 +366,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.15</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.15.16</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
