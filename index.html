@@ -374,7 +374,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.0</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.1</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -389,6 +389,8 @@
   function k(sfx){ if(!ns) throw new Error('namespace not ready'); return 'wenqu-'+ns+(sfx||''); }
   function nsOf(sess){ return sess&&sess.user&&sess.user.id ? 'u-'+sess.user.id : 'anon'; }
   function emptyState(){ return {concepts:[],threads:[],entries:[]}; }
+  // id = 前缀 + 毫秒 + 8 位随机。数据库主键目前是全局 id,两个用户同一毫秒各建一条会撞;加随机位后概率可忽略
+  function newId(prefix){ let r=''; try{ const a=new Uint32Array(1); crypto.getRandomValues(a); r=a[0].toString(36); }catch(e){ r=Math.random().toString(36).slice(2); } return prefix+'_'+Date.now()+'_'+r.padStart(7,'0').slice(-7); }
   // 旧版单一 key 的数据 → 归入匿名空间(登录后由用户明确选择是否并入账号);旧的同步基准/云端快照作废
   (function migrateLegacy(){ try{
     const r=localStorage.getItem(LEGACY_KEY); if(r===null) return;
@@ -717,11 +719,11 @@
   function openThreadSheet(){ tSelConcepts=[]; $('#tTitle').value=''; $('#tNewConcept').value=''; $('#tTitle').classList.remove('err'); renderTConceptChips(); showSheet('#threadSheet'); setTimeout(()=>$('#tTitle').focus(),280); }
   function renderTConceptChips(){ const box=$('#tConceptChips'); box.innerHTML=''; state.concepts.forEach(c=>{ const chip=document.createElement('button'); chip.className='chip'+(tSelConcepts.includes(c.id)?' on':''); chip.textContent=c.label; chip.addEventListener('click',()=>{ tSelConcepts=tSelConcepts.includes(c.id)?tSelConcepts.filter(x=>x!==c.id):tSelConcepts.concat(c.id); renderTConceptChips(); }); box.appendChild(chip); }); }
   $('#tNewConcept').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); const v=e.target.value.trim(); if(!v)return; const id=newConcept(v); tSelConcepts.push(id); e.target.value=''; renderTConceptChips(); } });
-  function newConcept(label){ const id='c_'+Date.now()+'_'+Math.floor(Math.random()*999); state.concepts.push({id,label,x:200+(Math.random()-.5)*120,y:200+(Math.random()-.5)*120}); return id; }
+  function newConcept(label){ const id=newId('c'); state.concepts.push({id,label,x:200+(Math.random()-.5)*120,y:200+(Math.random()-.5)*120}); return id; }
   $('#fab').addEventListener('click',openThreadSheet);
   $('#tCancel').addEventListener('click',hideSheets);
   $('#tTitle').addEventListener('input',()=>$('#tTitle').classList.remove('err'));
-  $('#tSave').addEventListener('click',()=>{ const title=$('#tTitle').value.trim(); if(!title){ $('#tTitle').classList.add('err'); $('#tTitle').focus(); return; } const id='t_'+Date.now(); state.threads.push({id,title,conceptIds:tSelConcepts.slice(),createdAt:Date.now()}); save(); hideSheets(); toast('线索起好了'); openThread(id); });
+  $('#tSave').addEventListener('click',()=>{ const title=$('#tTitle').value.trim(); if(!title){ $('#tTitle').classList.add('err'); $('#tTitle').focus(); return; } const id=newId('t'); state.threads.push({id,title,conceptIds:tSelConcepts.slice(),createdAt:Date.now()}); save(); hideSheets(); toast('线索起好了'); openThread(id); });
 
   let segKind='iterate', editingEntryId=null;
   let pendingRound=null;  // 非null时,新片段进这一轮(用于'更新'开启新轮)
@@ -743,7 +745,7 @@
     if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.updatedAt=Date.now();
       if(segKind==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
       save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
-    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:'e_'+Date.now(),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'已更新':'已续一段'); }
+    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:newId('e'),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'已更新':'已续一段'); }
   });
 
   function openConceptSheet(){ renderAttachChips(); $('#attachNew').value=''; showSheet('#conceptSheet'); }
@@ -947,9 +949,9 @@
     fresh.concepts=fresh.concepts.filter(c=>{ if(byLabel[c.label]){ fresh.threads.forEach(t=>t.conceptIds=t.conceptIds.map(x=>x===c.id?byLabel[c.label]:x)); return false; } return true; });
     // 重映射 id,避免和现有数据冲突
     const cidMap={}, tidMap={};
-    fresh.concepts.forEach(c=>{ const nid='c_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); cidMap[c.id]=nid; c.id=nid; });
-    fresh.threads.forEach(t=>{ const nid='t_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); tidMap[t.id]=nid; t.id=nid; t.conceptIds=(t.conceptIds||[]).map(x=>cidMap[x]||x); });
-    fresh.entries.forEach(e=>{ e.id='e_seed_'+Date.now()+'_'+Math.floor(Math.random()*9999); e.threadId=tidMap[e.threadId]||e.threadId; });
+    fresh.concepts.forEach(c=>{ const nid=newId('c_seed'); cidMap[c.id]=nid; c.id=nid; });
+    fresh.threads.forEach(t=>{ const nid=newId('t_seed'); tidMap[t.id]=nid; t.id=nid; t.conceptIds=(t.conceptIds||[]).map(x=>cidMap[x]||x); });
+    fresh.entries.forEach(e=>{ e.id=newId('e_seed'); e.threadId=tidMap[e.threadId]||e.threadId; });
     state.concepts=state.concepts.concat(fresh.concepts);
     state.threads=state.threads.concat(fresh.threads);
     state.entries=state.entries.concat(fresh.entries);
