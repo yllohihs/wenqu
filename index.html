@@ -191,6 +191,18 @@
   #sourceFields.dim{opacity:.4;}
   #sourceFields .field:disabled{cursor:not-allowed;}
   #sourceFields label{margin-bottom:10px;}
+  #imgField{margin-bottom:22px;}
+  .seg-imgs{display:flex; flex-wrap:wrap; gap:8px;}
+  .seg-imgs .thumb{position:relative; width:72px; height:72px; border:0.5px solid var(--line);}
+  .seg-imgs .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .seg-imgs .thumb .rm{position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%; background:var(--ink); color:var(--paper); font-size:12px; line-height:20px; text-align:center; cursor:pointer;}
+  .seg-imgs .thumb.up{display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ink-faint); letter-spacing:1px;}
+  .img-add{display:inline-block; margin-top:10px; font-family:'Noto Sans SC',sans-serif; font-size:12px; letter-spacing:.5px; color:var(--ink-soft); background:var(--raise); padding:7px 12px; cursor:pointer;}
+  .img-hint{font-size:11px; color:var(--ink-faint); margin-top:8px; line-height:1.5;}
+  .sbody-imgs{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .sbody-imgs img{max-width:140px; max-height:140px; object-fit:cover; border:0.5px solid var(--line); cursor:pointer;}
+  .img-viewer{position:fixed; inset:0; background:rgba(0,0,0,.92); display:flex; align-items:center; justify-content:center; z-index:9999;}
+  .img-viewer img{max-width:94vw; max-height:90vh; object-fit:contain;}
 
   .ktabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
   .ktab{font-family:'Inter',sans-serif; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; padding:8px 12px; border:0.5px solid var(--line); color:var(--ink-soft); background:none; cursor:pointer;}
@@ -323,6 +335,11 @@
   <div class="ktabs" id="kTabs"></div>
   <label>Content · 内容</label>
   <textarea class="field" id="sBody" placeholder="这一步的想法、材料或结论"></textarea>
+  <div id="imgField" style="display:none;">
+    <div class="seg-imgs" id="segImgs"></div>
+    <label class="img-add" id="imgAdd"><input type="file" id="imgInput" accept="image/*" multiple hidden>＋ 添加图片</label>
+    <div class="img-hint" id="imgHint"></div>
+  </div>
   <div id="sourceFields">
     <label id="sourceHint">Source · 来源（选“引申”时可填）</label>
     <input class="field" id="sSource" type="text" placeholder="书名、人名、出处均可" />
@@ -374,7 +391,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.2</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.19.0</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -659,6 +676,7 @@
       s+='<div class="ktag" data-eid="'+e.id+'"><span class="kcn">'+ki.cn+'</span> '+ki.en+'</div>';
       if(editingKind===e.id){ s+='<div class="kpick">'; KINDS.forEach(k=>{ s+='<button data-eid="'+e.id+'" data-k="'+k.k+'"><span class="kcn">'+k.cn+'</span></button>'; }); s+='</div>'; }
       s+='<div class="sbody">'+esc(e.body)+'</div>';
+      if(e.images&&e.images.length){ s+='<div class="sbody-imgs">'+e.images.map(u=>'<img src="'+esc(u)+'" data-img="'+esc(u)+'">').join('')+'</div>'; }
       if(e.kind==='source' && (e.source||e.link)){ s+='<div class="source">'; const su=safeUrl(e.link); if(su){ s+='<a href="'+esc(su)+'" target="_blank" rel="noopener noreferrer">'+esc(e.source||su)+'</a>'; } else { s+=esc(e.source||e.link); } s+='</div>'; }
       // 显示"发生时间";若创建一周后才编辑过,附注编辑时间(一周内的修改视为润色,不标注)
       let when=fmtEn(occAt(e));
@@ -701,6 +719,7 @@
     document.querySelectorAll('#detailView .ktag').forEach(l=>l.addEventListener('click',()=>{ editingKind=editingKind===l.getAttribute('data-eid')?null:l.getAttribute('data-eid'); renderDetail(); }));
     document.querySelectorAll('#detailView .kpick button').forEach(b=>b.addEventListener('click',()=>changeKind(b.getAttribute('data-eid'),b.getAttribute('data-k'))));
     document.querySelectorAll('#detailView .sedit').forEach(d=>d.addEventListener('click',()=>openSeg(d.getAttribute('data-edit'))));
+    document.querySelectorAll('#detailView .sbody-imgs img').forEach(im=>im.addEventListener('click',()=>openImgViewer(im.getAttribute('data-img'))));
     document.querySelectorAll('#detailView .sdel').forEach(d=>d.addEventListener('click',()=>{ if(confirm('删除这一段？')) delEntry(d.getAttribute('data-del')); }));
   }
   function changeKind(eid,k){ const e=state.entries.find(x=>x.id===eid); if(e){ const wasUpdate=e.kind==='update'; e.kind=k; e.updatedAt=Date.now();
@@ -729,23 +748,73 @@
   let pendingRound=null;  // 非null时,新片段进这一轮(用于'更新'开启新轮)
   function growBody(){ const b=$('#sBody'); b.style.height='auto'; b.style.height=Math.max(46,b.scrollHeight)+'px'; }
   $('#sBody').addEventListener('input',growBody);
+  function openImgViewer(url){ const v=document.createElement('div'); v.className='img-viewer'; v.innerHTML='<img src="'+esc(url)+'">'; v.addEventListener('click',()=>v.remove()); document.body.appendChild(v); }
+  // ---- 片段图片(2.19) ----
+  // 存桶:公开 bucket 'images';片段里存 e.images = [url,...]。压缩后再传。
+  let segImgs=[];          // 当前浮层里的图(url 字符串),编辑时预填
+  const IMG_MAX=1600, IMG_Q=0.82;
+  function compressImage(file){ return new Promise((resolve,reject)=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{ URL.revokeObjectURL(url);
+      let {width:w,height:h}=img; const scale=Math.min(1, IMG_MAX/Math.max(w,h));
+      w=Math.round(w*scale); h=Math.round(h*scale);
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      cv.toBlob(b=>b?resolve(b):reject(new Error('压缩失败')),'image/jpeg',IMG_Q);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('读图失败')); };
+    img.src=url;
+  }); }
+  async function uploadImage(file){
+    if(!sb||!session) throw new Error('需登录后才能加图片');
+    const blob=await compressImage(file);
+    const path=(session.user.id)+'/'+newId('img')+'.jpg';
+    const {error}=await sb.storage.from('images').upload(path, blob, {contentType:'image/jpeg', upsert:false});
+    if(error) throw error;
+    const {data}=sb.storage.from('images').getPublicUrl(path);
+    return data.publicUrl;
+  }
+  function renderSegImgs(){ const box=$('#segImgs'); box.innerHTML='';
+    segImgs.forEach((u,i)=>{ const d=document.createElement('div'); d.className='thumb';
+      if(u==='__uploading__'){ d.classList.add('up'); d.textContent='上传中'; }
+      else { d.innerHTML='<img src="'+esc(u)+'"><span class="rm" data-i="'+i+'">✕</span>';
+        d.querySelector('.rm').addEventListener('click',()=>{ segImgs.splice(i,1); renderSegImgs(); }); }
+      box.appendChild(d); }); }
+  async function onPickImages(files){
+    if(!session){ toast('加图片需要先登录'); return; }
+    for(const f of files){
+      const slot=segImgs.push('__uploading__')-1; renderSegImgs();
+      try{ const url=await uploadImage(f); segImgs[slot]=url; }
+      catch(e){ segImgs.splice(slot,1); toast('图片上传失败：'+(e.message||e)); }
+      renderSegImgs();
+    }
+  }
+  function updateImgField(){
+    const on=(segKind==='source'||segKind==='iterate');
+    $('#imgField').style.display=on?'block':'none';
+    $('#imgHint').textContent = session ? '' : '登录后可添加图片';
+    $('#imgAdd').style.display = session ? 'inline-block' : 'none';
+  }
+
   function openSeg(eid){
     editingEntryId = (typeof eid==='string') ? eid : null;
-    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
-    else { segKind='iterate'; $('#sBody').value=''; $('#sSource').value=''; $('#sLink').value=''; }
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); segKind=e.kind; $('#sBody').value=e.body; $('#sSource').value=e.source||''; $('#sLink').value=e.link||''; segImgs=(e.images||[]).slice(); $('.sh-title-seg')&&($('.sh-title-seg').textContent='Edit Entry · 编辑'); }
+    else { segKind='iterate'; $('#sBody').value=''; $('#sSource').value=''; $('#sLink').value=''; segImgs=[]; }
+    renderSegImgs();
     growBody();
-    $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); showSheet('#segSheet'); setTimeout(()=>{ growBody(); $('#sBody').focus(); },280);
+    $('#sBody').classList.remove('err'); renderKTabs(); updateSourceState(); updateImgField(); showSheet('#segSheet'); setTimeout(()=>{ growBody(); $('#sBody').focus(); },280);
   }
   function updateSourceState(){ const on=segKind==='source'; $('#sourceFields').classList.toggle('dim',!on); $('#sSource').disabled=!on; $('#sLink').disabled=!on; $('#sourceHint').innerHTML=on?'Source · 来源':'Source · 来源（选“引申”时可填）'; }
-  function renderKTabs(){ const box=$('#kTabs'); box.innerHTML=''; KINDS.forEach(k=>{ const b=document.createElement('button'); b.className='ktab'+(segKind===k.k?' on':''); b.innerHTML='<span class="kcn">'+k.cn+'</span>'; b.addEventListener('click',()=>{ segKind=k.k; updateSourceState(); renderKTabs(); }); box.appendChild(b); }); }
+  function renderKTabs(){ const box=$('#kTabs'); box.innerHTML=''; KINDS.forEach(k=>{ const b=document.createElement('button'); b.className='ktab'+(segKind===k.k?' on':''); b.innerHTML='<span class="kcn">'+k.cn+'</span>'; b.addEventListener('click',()=>{ segKind=k.k; updateSourceState(); updateImgField(); renderKTabs(); }); box.appendChild(b); }); }
+  $('#imgInput').addEventListener('change',(e)=>{ const fs=[...e.target.files]; e.target.value=''; onPickImages(fs); });
   $('#sCancel').addEventListener('click',hideSheets);
   $('#sBody').addEventListener('input',()=>$('#sBody').classList.remove('err'));
   $('#sSave').addEventListener('click',()=>{ const body=$('#sBody').value.trim(); if(!body){ $('#sBody').classList.add('err'); $('#sBody').focus(); return; }
     const link=segKind==='source'?$('#sLink').value.trim():''; const source=segKind==='source'?$('#sSource').value.trim():'';
-    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.updatedAt=Date.now();
+    if(editingEntryId){ const e=state.entries.find(x=>x.id===editingEntryId); const wasUpdate=e.kind==='update'; e.kind=segKind; e.body=body; e.link=link; e.source=source; e.images=segImgs.filter(u=>u&&u!=='__uploading__'); e.updatedAt=Date.now();
       if(segKind==='update' && !wasUpdate){ e.occurredAt=Date.now(); }
       save(); hideSheets(); renderDetail(); toast('已更新'); editingEntryId=null; }
-    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:newId('e'),threadId:currentThread,round:r,kind:segKind,body,link,source,createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'已更新':'已续一段'); }
+    else { const r = pendingRound || maxRound(currentThread); state.entries.push({id:newId('e'),threadId:currentThread,round:r,kind:segKind,body,link,source,images:segImgs.filter(u=>u&&u!=='__uploading__'),createdAt:Date.now(),occurredAt:Date.now()}); pendingRound=null; save(); hideSheets(); renderDetail(); toast(r>1?'已更新':'已续一段'); }
   });
 
   function openConceptSheet(){ renderAttachChips(); $('#attachNew').value=''; showSheet('#conceptSheet'); }
