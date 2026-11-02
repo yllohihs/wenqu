@@ -374,7 +374,7 @@
   <div class="p-row" id="bkRow" style="display:none;"><div><div class="l">找回本机备份</div><div class="d" id="bkDesc"></div></div><button id="bkBtn">找回</button></div>
   <div class="p-row"><div><div class="l">导入</div><div class="d">从备份恢复，覆盖现有内容</div></div><button id="importBtn">导入</button><input type="file" id="importFile" accept="application/json" style="display:none" /></div>
   <div class="p-row"><div><div class="l">载入示例</div><div class="d">看看别人怎么记，可随时删掉</div></div><button id="seedBtn">载入</button></div>
-  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.1</span></div>
+  <div class="p-note"><b>问渠 · Wellspring</b><br>记录一个想法从冒头到结论的过程：提问、引申、迭代、初步结论，日后有新讨论还能继续更新。一条线索可挂多个概念，概念之间便连成脉络。<br><br>问渠那得清如许，为有源头活水来。<br><br><b>登录后数据云端同步</b>，换设备、重装都不丢。偶尔导出备份可再多一重保险。<br><br><span class="p-ver">Version 2.18.2</span></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1117,9 +1117,43 @@
   window.addEventListener('appinstalled',()=>$('#installBar').classList.remove('show'));
 
   $('#fabWrap').style.display='block';
+  // ---- 重置密码链接的接收端(2.18.2 补,此前完全缺失) ----
+  // URL hash 形如 #access_token=…&type=recovery&… ;也兼容 ?type=recovery 查询串
+  function detectRecovery(){
+    const h=(location.hash||'').replace(/^#/,''); const q=(location.search||'').replace(/^\?/,'');
+    return /(^|&)type=recovery(&|$)/.test(h) || /(^|&)type=recovery(&|$)/.test(q);
+  }
+  async function handleRecovery(){
+    hideAuth();
+    // Supabase JS 会自动从 URL 取 token 建立临时会话;等它就绪(监听事件 + 轮询兜底)
+    let ready=false;
+    sb.auth.onAuthStateChange((ev)=>{ if(ev==='PASSWORD_RECOVERY'||ev==='SIGNED_IN') ready=true; });
+    for(let i=0;i<20 && !ready;i++){ const {data}=await sb.auth.getSession(); if(data&&data.session){ ready=true; break; } await new Promise(r=>setTimeout(r,150)); }
+    // 把 token 从地址栏抹掉,避免刷新重复触发、也避免 token 残留在历史里
+    try{ history.replaceState(null,'',location.pathname+location.search.replace(/[?&]type=recovery/,'')); }catch(e){}
+    if(!ready){ showAuth(); authErr('重置链接已失效，请在登录页重新点“忘记密码”获取新链接'); return; }
+    // 弹出设新密码(连问两次,必须一致)
+    while(true){
+      const np=prompt('设置新密码（至少 6 位）');
+      if(np===null){ showAuth(); authErr('已取消。可重新登录或再点“忘记密码”'); await sb.auth.signOut().catch(()=>{}); return; }
+      if(np.trim().length<6){ alert('密码至少 6 位'); continue; }
+      const np2=prompt('再输入一次确认');
+      if(np2===null){ showAuth(); authErr('已取消'); await sb.auth.signOut().catch(()=>{}); return; }
+      if(np.trim()!==np2.trim()){ alert('两次输入不一致，请重来'); continue; }
+      const {error}=await sb.auth.updateUser({password:np.trim()});
+      if(error){ alert('设置失败：'+error.message); continue; }
+      break;
+    }
+    // 改完登出,回登录页用新密码登录(干净,不直接带着 recovery 会话进去)
+    await sb.auth.signOut().catch(()=>{});
+    session=null; showAuth(); authErr('密码已更新，请用新密码登录');
+  }
+
   (async function boot(){
     // 登录状态没恢复之前不读任何本机数据、不渲染,避免闪现上一个账号的内容
     if(sb){
+      // 点邮件里的重置链接回来:URL 带 type=recovery。先接住它,弹"设置新密码",不要当成正常登录进列表
+      if(detectRecovery()){ await handleRecovery(); return; }
       const {data}=await sb.auth.getSession();
       if(data && data.session){
         session=data.session; hideAuth(); enterNamespace(nsOf(session));
